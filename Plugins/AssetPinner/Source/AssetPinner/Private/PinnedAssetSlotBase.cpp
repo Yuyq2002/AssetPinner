@@ -3,13 +3,25 @@
 
 #include "PinnedAssetSlotBase.h"
 #include "Components/TextBlock.h"
+#include "Components/Image.h"
 #include "AssetRegistry/AssetRegistryModule.h"
+#include "PinnedSectionBase.h"
+#include "PinnedAssetSubsystem.h"
+#include "C:\Program Files\Epic Games\UE_5.5\Engine\Source\Editor\UMGEditor\Public\Components\AssetThumbnailWidget.h"
 
-void UPinnedAssetSlotBase::SetAssetData(const FString& Path)
+void UPinnedAssetSlotBase::SetAssetData(const FString& Path, const FAssetData& Asset)
 {
 	AssetPath = Path;
 
-	Name->SetText(FText::FromString(FPackageName::GetShortName(*Path)));
+	if(Name)
+		Name->SetText(FText::FromString(FPackageName::GetShortName(*Path)));
+
+	Thumbnail->SetAsset(Asset);
+}
+
+void UPinnedAssetSlotBase::SetParentRef(UPinnedSectionBase* ParentReference)
+{
+	ParentRef = ParentReference;
 }
 
 FReply UPinnedAssetSlotBase::NativeOnMouseButtonDoubleClick(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
@@ -44,6 +56,23 @@ FReply UPinnedAssetSlotBase::NativeOnMouseButtonDoubleClick(const FGeometry& InG
 	}
 	else
 		UE_LOG(LogTemp, Error, TEXT("Open Asset Window Failed"));
+
+	return FReply::Handled();
+}
+
+FReply UPinnedAssetSlotBase::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	if (!ParentRef->GetInUnpinMode())
+		return FReply::Handled();
+
+	if (!GEngine)
+		return FReply::Handled();
+
+	UPinnedAssetSubsystem* Subsystem = GEngine->GetEngineSubsystem<UPinnedAssetSubsystem>();
+	if (!Subsystem)
+		return FReply::Handled();
+
+	Subsystem->RemoveAssetPath(AssetPath);
 
 	return FReply::Handled();
 }

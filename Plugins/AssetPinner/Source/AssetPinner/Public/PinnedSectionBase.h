@@ -18,13 +18,20 @@ class ASSETPINNER_API UPinnedSectionBase : public UEditorUtilityWidget
 	
 public:
 	virtual void NativeConstruct();
+	bool GetInUnpinMode();
 
 private:
 	UFUNCTION()
 	void OnListChangedCallback(const TArray<FString>& List);
 	void Refresh(const TArray<FString>& List);
 
+	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent);
+	virtual FReply NativeOnKeyUp(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent);
+
+
 private:
+	bool InUnpinMode;
+
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
 	TSubclassOf<UEditorUtilityWidget> AssetSlotWidget;
 

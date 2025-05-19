@@ -15,24 +15,19 @@ void UPinnedAssetSubsystem::AddAssetPath(FString Path)
 		if (OnListChangedDelegate.IsBound())
 			OnListChangedDelegate.Execute(AssetPathList);
 	} 
+}
 
-	TArray<FString> PendingRemove;
-	for (auto& AssetPath : AssetPathList)
+void UPinnedAssetSubsystem::RemoveAssetPath(FString Path)
+{
+	if (AssetPathList.Contains(Path))
 	{
-		FPackagePath OutPath;
-		FPackagePath PackagePath;
-		if (FPackagePath::TryFromPackageName(AssetPath, PackagePath))
-		{
-			if (!FPackageName::DoesPackageExist(PackagePath, &OutPath))
-			{
-				PendingRemove.Add(AssetPath);
+		AssetPathList.Remove(Path);
 
-				UE_LOG(LogTemp, Warning, TEXT("Cannot find file: %s"), *AssetPath);
-			}
-		}
+		FFileHelper::SaveStringArrayToFile(AssetPathList, *FilePath);
+
+		if (OnListChangedDelegate.IsBound())
+			OnListChangedDelegate.Execute(AssetPathList);
 	}
-
-	AssetPathList.RemoveAll([PendingRemove](FString Candidate) {return PendingRemove.Contains(Candidate); });
 }
 
 const TArray<FString>& UPinnedAssetSubsystem::GetAssetPathList()

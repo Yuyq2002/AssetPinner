@@ -23,6 +23,7 @@ public:
 	FAssetPathListChangedSignature OnListChangedDelegate;
 
 	void AddAssetPath(FString Path);
+	void RemoveAssetPath(FString Path);
 	const TArray<FString>& GetAssetPathList();
 
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;

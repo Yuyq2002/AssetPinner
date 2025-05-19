@@ -15,6 +15,8 @@ class ASSETPINNER_API UPinAssetAction : public UAssetActionUtility
 	GENERATED_BODY()
 	
 public:
+	UPinAssetAction();
+
 	UFUNCTION(CallInEditor, BlueprintCallable)
 	void PinAssets();
 

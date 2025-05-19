@@ -42,7 +42,9 @@ public class AssetPinner : ModuleRules
                 "ContentBrowser",
 				"UnrealEd",
                 "UMG",
-                "AssetRegistry"
+                "AssetRegistry",
+                "InputCore",
+                "UMGEditor"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

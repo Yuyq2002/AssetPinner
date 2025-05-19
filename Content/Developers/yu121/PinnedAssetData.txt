@@ -1,0 +1,2 @@
+/AssetPinner/BPW_PinnedAssetSection
+/Game/NewMaterial

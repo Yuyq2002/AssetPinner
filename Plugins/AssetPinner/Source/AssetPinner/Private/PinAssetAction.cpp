@@ -8,6 +8,11 @@
 #include "Subsystems/AssetEditorSubsystem.h"
 #include "PinnedAssetSubsystem.h"
 
+UPinAssetAction::UPinAssetAction()
+{
+	bIsActionForBlueprints = true;
+	SupportedClasses.Add(UBlueprint::StaticClass());
+}
 
 void UPinAssetAction::PinAssets()
 {
