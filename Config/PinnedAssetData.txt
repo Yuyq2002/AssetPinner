@@ -1,0 +1,4 @@
+/AssetPinner/BPW_PinnedAssetSection
+/AssetPinner/BPW_PinnedAssetSlot
+/Game/NewEditorUtilityBlueprint
+/Game/NewMaterial
