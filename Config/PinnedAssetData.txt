@@ -2,3 +2,4 @@
 /AssetPinner/BPW_PinnedAssetSlot
 /Game/NewEditorUtilityBlueprint
 /Game/NewMaterial
+/Game/NewNiagaraSystem

@@ -26,25 +26,6 @@ void UPinAssetAction::PinAssets()
 		if (Subsystem)
 			Subsystem->AddAssetPath(AssetPath);
 	}
-
-		//if (!Asset)
-		//{
-		//	UE_LOG(LogTemp, Error, TEXT("Open Asset Window Failed - Asset is not valid"));
-		//}
-
-		//UAssetEditorSubsystem* Subsystem = GEditor ? GEditor->GetEditorSubsystem<UAssetEditorSubsystem>() : nullptr;
-		//if (!Subsystem)
-		//{
-		//	UE_LOG(LogTemp, Error, TEXT("Open Asset Window Failed - Asset Editor Subsystem is not valid"));
-		//}
-
-		//bool success = Subsystem->OpenEditorForAsset(Asset);
-		//if (success)
-		//{
-		//	UE_LOG(LogTemp, Log, TEXT("Open Asset Window Succeeded"));
-		//}
-		//else 
-		//	UE_LOG(LogTemp, Error, TEXT("Open Asset Window Failed"));
 }
 
 void UPinAssetAction::GetSelectedAssets(TArray<FAssetData>& SelectedAssets)

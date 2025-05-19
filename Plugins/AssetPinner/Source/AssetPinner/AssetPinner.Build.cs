@@ -41,7 +41,8 @@ public class AssetPinner : ModuleRules
 				"Blutility",
                 "ContentBrowser",
 				"UnrealEd",
-                "UMG"
+                "UMG",
+                "AssetRegistry"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
