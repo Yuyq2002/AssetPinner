@@ -11,4 +11,16 @@ public:
 	/** IModuleInterface implementation */
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
+
+private:
+	void RegisterMenuExtension();
+
+	void AddContentBrowserContextMenuExtender();
+	void RemoveContentBrowserContextMenuExtender();
+	static TSharedRef<FExtender> OnExtendContentBrowserAssetSelectionMenu(const TArray<FAssetData>& SelectedAssets);
+	static void ExecutePinAsset(FMenuBuilder& MenuBuilder, const TArray<FAssetData> SelectedAssets);
+
+private:
+	FDelegateHandle ContentBrowserExtenderDelegateHandle;
+
 };

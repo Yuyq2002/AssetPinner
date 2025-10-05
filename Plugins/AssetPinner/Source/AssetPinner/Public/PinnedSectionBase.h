@@ -7,6 +7,15 @@
 #include "PinnedSectionBase.generated.h"
 
 class UWrapBox;
+class UEditorUtilityButton;
+class UPinnedAssetSlotBase;
+
+enum class EditState
+{
+	Unfocused,
+	NotInEditMode,
+	InEditMode
+};
 
 /**
  * 
@@ -18,23 +27,39 @@ class ASSETPINNER_API UPinnedSectionBase : public UEditorUtilityWidget
 	
 public:
 	virtual void NativeConstruct();
-	bool GetInUnpinMode();
+	EditState CheckInEditMode();
+	void AddRecheck(UPinnedAssetSlotBase* Caller, FKey Input);
 
 private:
 	UFUNCTION()
-	void OnListChangedCallback(const TArray<FString>& List);
-	void Refresh(const TArray<FString>& List);
+	void OnListChangedCallback(const TArray<FString>& List, const TArray<bool>& StatusList);
+	void Refresh(const TArray<FString>& List, const TArray<bool>& StatusList);
+
+	UFUNCTION()
+	void OnClearButtonClicked();
 
 	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent);
 	virtual FReply NativeOnKeyUp(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent);
-
+	virtual void NativeOnFocusLost(const FFocusEvent& InFocusEvent) override;
 
 private:
-	bool InUnpinMode;
+	EditState EditMode;
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
 	TSubclassOf<UEditorUtilityWidget> AssetSlotWidget;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
-	UWrapBox* WrapBox;
+	UWrapBox* PinnedWrapBox;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
+	UWrapBox* RecentWrapBox;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
+	UEditorUtilityButton* ClearButton;
+
+	UPROPERTY()
+	UPinnedAssetSlotBase* RecallEditAction;
+
+	UPROPERTY()
+	FKey MouseInput;
 };

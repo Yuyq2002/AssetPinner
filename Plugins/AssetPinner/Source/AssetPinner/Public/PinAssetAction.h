@@ -3,23 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AssetActionUtility.h"
-#include "PinAssetAction.generated.h"
 
 /**
  * 
  */
-UCLASS()
-class ASSETPINNER_API UPinAssetAction : public UAssetActionUtility
+class ASSETPINNER_API PinAssetAction
 {
-	GENERATED_BODY()
-	
 public:
-	UPinAssetAction();
-
-	UFUNCTION(CallInEditor, BlueprintCallable)
-	void PinAssets();
+	static void PinAssets(const TArray<FAssetData>& SelectedAssets);
 
 private:
-	void GetSelectedAssets(TArray<FAssetData>& SelectedAssets);
+	//void GetSelectedAssets(TArray<FAssetData>& SelectedAssets);
 };

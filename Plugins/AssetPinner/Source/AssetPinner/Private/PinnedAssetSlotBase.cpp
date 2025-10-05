@@ -7,7 +7,7 @@
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "PinnedSectionBase.h"
 #include "PinnedAssetSubsystem.h"
-#include "C:\Program Files\Epic Games\UE_5.5\Engine\Source\Editor\UMGEditor\Public\Components\AssetThumbnailWidget.h"
+#include "Components\AssetThumbnailWidget.h"
 
 void UPinnedAssetSlotBase::SetAssetData(const FString& Path, const FAssetData& Asset)
 {
@@ -24,8 +24,23 @@ void UPinnedAssetSlotBase::SetParentRef(UPinnedSectionBase* ParentReference)
 	ParentRef = ParentReference;
 }
 
+void UPinnedAssetSlotBase::RecheckInput(FKey Input)
+{
+	UPinnedAssetSubsystem* Subsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
+	if (!Subsystem)
+		return;
+
+	if (Input == EKeys::LeftMouseButton)
+		Subsystem->MoveAssetPath(AssetPath);
+	else if (Input == EKeys::RightMouseButton)
+		Subsystem->RemoveAssetPath(AssetPath);
+}
+
 FReply UPinnedAssetSlotBase::NativeOnMouseButtonDoubleClick(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
+	if (!InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton))
+		return FReply::Unhandled();
+
 	TArray<FAssetData> Assets;
 	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
 	IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
@@ -62,17 +77,26 @@ FReply UPinnedAssetSlotBase::NativeOnMouseButtonDoubleClick(const FGeometry& InG
 
 FReply UPinnedAssetSlotBase::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
-	if (!ParentRef->GetInUnpinMode())
+	EditState State = ParentRef->CheckInEditMode();
+
+	if (!GEditor || State == EditState::NotInEditMode)
 		return FReply::Handled();
 
-	if (!GEngine)
+	if (State == EditState::Unfocused)
+	{
+		ParentRef->AddRecheck(this, InMouseEvent.GetEffectingButton());
 		return FReply::Handled();
+	}
 
-	UPinnedAssetSubsystem* Subsystem = GEngine->GetEngineSubsystem<UPinnedAssetSubsystem>();
+	UPinnedAssetSubsystem* Subsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
 	if (!Subsystem)
 		return FReply::Handled();
 
-	Subsystem->RemoveAssetPath(AssetPath);
+	if(InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton))
+		Subsystem->MoveAssetPath(AssetPath);
+
+	if (InMouseEvent.IsMouseButtonDown(EKeys::RightMouseButton))
+		Subsystem->RemoveAssetPath(AssetPath);
 
 	return FReply::Handled();
 }
