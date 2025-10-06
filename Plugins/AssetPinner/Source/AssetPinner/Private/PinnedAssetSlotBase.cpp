@@ -100,3 +100,13 @@ FReply UPinnedAssetSlotBase::NativeOnMouseButtonDown(const FGeometry& InGeometry
 
 	return FReply::Handled();
 }
+
+void UPinnedAssetSlotBase::NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	Background->SetBrushColor(HoverColor);
+}
+
+void UPinnedAssetSlotBase::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
+{
+	Background->SetBrushColor(BaseColor);
+}

@@ -1,3 +1,5 @@
-/Game/NewEditorUtilityBlueprint
-/AssetPinner/BPW_PinnedAssetSlot
-/AssetPinner/BPW_PinnedAssetSection
+ 0
+ 0
+ 0
+/AssetPinner/BPW_PinnedAssetSlot 1
+/AssetPinner/BPW_PinnedAssetSection 0
