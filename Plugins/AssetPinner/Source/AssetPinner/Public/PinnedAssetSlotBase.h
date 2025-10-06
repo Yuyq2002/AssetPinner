@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "EditorUtilityWidget.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/SizeBox.h"
 #include "PinnedAssetSlotBase.generated.h"
 
 class UTextBlock;
@@ -26,7 +27,10 @@ public:
 	void SetParentRef(UPinnedSectionBase* ParentReference);
 	void RecheckInput(FKey Input);
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
+	USizeBox* SizeBox;
 private:
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
 	UTextBlock* Name;
 

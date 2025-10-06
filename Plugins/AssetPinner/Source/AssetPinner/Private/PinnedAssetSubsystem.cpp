@@ -6,17 +6,13 @@
 
 void UPinnedAssetSubsystem::AddAssetPath(FString Path, bool IsPinned)
 {
+	bool SaveData = false;
 	if (!AssetPathList.Contains(Path))
 	{
 		AssetPathList.Add(Path);
 		StatusList.Add(IsPinned);
 
-		TArray<FString> SaveList;
-		for (int i = 0; i < AssetPathList.Num(); i++)
-		{
-			SaveList.Add(AssetPathList[i] + ' ' + (StatusList[i] ? '1' : '0'));
-		}
-		FFileHelper::SaveStringArrayToFile(SaveList, *FilePath);
+		SaveData = true;
 
 		if (OnListChangedDelegate.IsBound())
 			OnListChangedDelegate.Execute(AssetPathList, StatusList);
@@ -31,9 +27,21 @@ void UPinnedAssetSubsystem::AddAssetPath(FString Path, bool IsPinned)
 
 			StatusList[Index] = true;
 
+			SaveData = true;
+
 			if (OnListChangedDelegate.IsBound())
 				OnListChangedDelegate.Execute(AssetPathList, StatusList);
 		}
+	}
+
+	if (SaveData)
+	{
+		TArray<FString> SaveList;
+		for (int i = 0; i < AssetPathList.Num(); i++)
+		{
+			SaveList.Add(AssetPathList[i] + ' ' + (StatusList[i] ? '1' : '0'));
+		}
+		FFileHelper::SaveStringArrayToFile(SaveList, *FilePath);
 	}
 }
 

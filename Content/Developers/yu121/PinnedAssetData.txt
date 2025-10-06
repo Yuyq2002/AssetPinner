@@ -1,2 +1,4 @@
-/AssetPinner/BPW_PinnedAssetSection
-/Game/NewMaterial
+ 0
+ 0
+/AssetPinner/BPW_PinnedAssetSlot 0
+/AssetPinner/BPW_PinnedAssetSection 0
