@@ -77,7 +77,7 @@ void UPinnedSectionBase::Refresh(const TArray<FString>& List, const TArray<bool>
 		UPinnedAssetSlotBase* NewSlot = CreateWidget<UPinnedAssetSlotBase>(this, AssetSlotWidget);
 		NewSlot->SetAssetData(List[i], Assets[0]);
 		NewSlot->SetParentRef(this);
-		NewSlot->SizeBox->SetHeightOverride(Size * Ration);
+		NewSlot->SizeBox->SetHeightOverride(Size * Ratio);
 		NewSlot->SizeBox->SetWidthOverride(Size);
 		SizeBoxes.Add(NewSlot->SizeBox);
 
@@ -122,10 +122,11 @@ FReply UPinnedSectionBase::NativeOnMouseWheel(const FGeometry& InGeometry, const
 	if (EditMode == EditState::InEditMode)
 	{
 		Size += InMouseEvent.GetWheelDelta() * 10;
+		Size = FMath::Max(Size, MinSize);
 
 		for (auto SizeBox : SizeBoxes)
 		{
-			SizeBox->SetHeightOverride(Size * Ration);
+			SizeBox->SetHeightOverride(Size * Ratio);
 			SizeBox->SetWidthOverride(Size);
 		}
 		return FReply::Handled();
@@ -134,7 +135,14 @@ FReply UPinnedSectionBase::NativeOnMouseWheel(const FGeometry& InGeometry, const
 	return FReply::Handled();
 }
 
+FReply UPinnedSectionBase::NativeOnFocusReceived(const FGeometry& InGeometry, const FFocusEvent& InFocusEvent)
+{
+	EditMode = EditState::NotInEditMode;
+	return FReply::Handled();
+}
+
 void UPinnedSectionBase::NativeOnFocusLost(const FFocusEvent& InFocusEvent)
 {
 	EditMode = EditState::Unfocused;
+	RecallEditAction = nullptr;
 }

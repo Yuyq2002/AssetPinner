@@ -151,6 +151,13 @@ void UPinnedAssetSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 				i--;
 			}
 		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Cannot find file: %s"), *AssetPathList[i]);
+			AssetPathList.RemoveAt(i);
+			StatusList.RemoveAt(i);
+			i--;
+		}
 	}
 
 	UAssetEditorSubsystem* AssetEditorSubsystem = GEditor ? GEditor->GetEditorSubsystem<UAssetEditorSubsystem>() : nullptr;
