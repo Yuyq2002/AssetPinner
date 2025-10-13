@@ -6,6 +6,7 @@
 #include "EditorUtilitySubsystem.h"
 #include <ContentBrowserModule.h>
 #include "PinAssetAction.h"
+#include <LevelEditor.h>
 
 #define LOCTEXT_NAMESPACE "FAssetPinnerModule"
 
@@ -53,7 +54,15 @@ void FAssetPinnerModule::RegisterMenuExtension()
                 if (WidgetBP)
                 {
                     UEditorUtilitySubsystem* EditorUtilitySubsystem = GEditor->GetEditorSubsystem<UEditorUtilitySubsystem>();
-                    EditorUtilitySubsystem->SpawnAndRegisterTab(WidgetBP);
+                    FName ID;
+                    EditorUtilitySubsystem->SpawnAndRegisterTabAndGetID(WidgetBP, ID);
+
+                    //FLevelEditorModule& LevelEditorModule = FModuleManager::GetModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
+                    //if (TSharedPtr<FTabManager> LevelEditorTabManager = LevelEditorModule.GetLevelEditorTabManager())
+                    //{
+                    //    TSharedPtr<SDockTab> Tab = LevelEditorTabManager->FindExistingLiveTab(FTabId(ID));
+                    //    Tab->context
+                    //}
                 }
             }),
         INVTEXT("Asset Pinner"),
@@ -61,7 +70,12 @@ void FAssetPinnerModule::RegisterMenuExtension()
         FSlateIcon(FAppStyle::GetAppStyleSetName(), "ViewportActorPreview.Pinned")
     ));
 
-    UToolMenu* AssetContextMenu = UToolMenus::Get()->ExtendMenu("ContentBrowser.AssetContextMenu");
+    FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
+
+    TSharedPtr<FExtender> MenuExtender = MakeShareable(new FExtender());
+    MenuExtender->AddMenuExtension("WindowLayout", EExtensionHook::After, nullptr, FMenuExtensionDelegate::CreateRaw(this, &FAssetPinnerModule::AddMenuExtention));
+
+    LevelEditorModule.GetMenuExtensibilityManager()->AddExtender(MenuExtender);
 }
 
 void FAssetPinnerModule::AddContentBrowserContextMenuExtender()
@@ -78,6 +92,25 @@ void FAssetPinnerModule::RemoveContentBrowserContextMenuExtender()
     FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
     TArray<FContentBrowserMenuExtender_SelectedAssets>& CBMenuExtenderDelegates = ContentBrowserModule.GetAllAssetViewContextMenuExtenders();
     CBMenuExtenderDelegates.RemoveAll([this](const FContentBrowserMenuExtender_SelectedAssets& Delegate) { return Delegate.GetHandle() == ContentBrowserExtenderDelegateHandle; });
+}
+
+void FAssetPinnerModule::AddMenuExtention(FMenuBuilder& MenuBuilder)
+{
+    MenuBuilder.BeginSection("Test section", LOCTEXT("ASSET_CONTEXT", "Pin Asset"));
+    {
+        // Add Menu Entry Here
+        MenuBuilder.AddMenuEntry(
+            LOCTEXT("ButtonName", "Test"),
+            LOCTEXT("Button ToolTip", "A test button"),
+            FSlateIcon(FAppStyle::GetAppStyleSetName(), "ViewportActorPreview.Pinned"),
+            FUIAction(FExecuteAction::CreateLambda([]()
+                {
+                    FAssetPinnerModule::PrintString();
+                })),
+            NAME_None,
+            EUserInterfaceActionType::Button);
+    }
+    MenuBuilder.EndSection();
 }
 
 TSharedRef<FExtender> FAssetPinnerModule::OnExtendContentBrowserAssetSelectionMenu(const TArray<FAssetData>& SelectedAssets)
@@ -109,6 +142,10 @@ void FAssetPinnerModule::ExecutePinAsset(FMenuBuilder& MenuBuilder, const TArray
 			EUserInterfaceActionType::Button);
 	}
 	MenuBuilder.EndSection();
+}
+
+void FAssetPinnerModule::PrintString()
+{
 }
 
 #undef LOCTEXT_NAMESPACE

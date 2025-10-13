@@ -17,8 +17,10 @@ private:
 
 	void AddContentBrowserContextMenuExtender();
 	void RemoveContentBrowserContextMenuExtender();
+	void AddMenuExtention(FMenuBuilder& MenuBuilder);
 	static TSharedRef<FExtender> OnExtendContentBrowserAssetSelectionMenu(const TArray<FAssetData>& SelectedAssets);
 	static void ExecutePinAsset(FMenuBuilder& MenuBuilder, const TArray<FAssetData> SelectedAssets);
+	static void PrintString();
 
 private:
 	FDelegateHandle ContentBrowserExtenderDelegateHandle;
