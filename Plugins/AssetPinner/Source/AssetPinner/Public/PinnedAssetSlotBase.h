@@ -7,6 +7,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Components/SizeBox.h"
 #include "Components/Border.h"
+#include "ExtendedBorder.h"
 #include "PinnedAssetSlotBase.generated.h"
 
 class UTextBlock;
@@ -32,7 +33,7 @@ public:
 	USizeBox* SizeBox;
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
-	UBorder* Background;
+	UExtendedBorder* Background;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
 	UTextBlock* Name;

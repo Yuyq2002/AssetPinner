@@ -2,7 +2,13 @@
 #include "ExtendedSlateBorder.h"
 #include "Components/BorderSlot.h"
 
-TSharedRef<SWidget> ExtendedBorder::RebuildWidget()
+UExtendedBorder::UExtendedBorder(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) 
+{
+
+}
+
+
+TSharedRef<SWidget> UExtendedBorder::RebuildWidget()
 {
 	MyBorder = SNew(SExtendedSlateBorder)
 		.FlipForRightToLeftFlowDirection(bFlipForRightToLeftFlowDirection);
