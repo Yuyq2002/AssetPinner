@@ -110,6 +110,15 @@ void UPinnedAssetSubsystem::ClearRecent()
 		OnListChangedDelegate.Execute(AssetPathList, StatusList);
 }
 
+bool UPinnedAssetSubsystem::GetStatus(FString Path)
+{
+	int Index = -1;
+	if (AssetPathList.Find(Path, Index))
+		return StatusList[Index];
+
+	return false;
+}
+
 const TArray<FString>& UPinnedAssetSubsystem::GetAssetPathList()
 {
 	return AssetPathList;
@@ -167,7 +176,7 @@ void UPinnedAssetSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 		return;
 	}
 
-	AssetEditorSubsystem->OnAssetEditorOpened().AddUObject(this, &UPinnedAssetSubsystem::OnAssetEditorOpen);
+	AssetEditorSubsystem->OnAssetEditorRequestedOpen().AddUObject(this, &UPinnedAssetSubsystem::OnAssetEditorOpen);
 }
 
 void UPinnedAssetSubsystem::OnAssetEditorOpen(UObject* Asset)

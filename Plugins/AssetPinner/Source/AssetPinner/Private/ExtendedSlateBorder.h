@@ -121,6 +121,8 @@ public:
 
 		/** Whether the context menu can be opened  */
 		SLATE_ATTRIBUTE(bool, AllowContextMenu)
+
+		SLATE_ATTRIBUTE(FString, AssetPath)
 	SLATE_END_ARGS()
 
 	/** See the AllowContextMenu attribute */
@@ -129,16 +131,19 @@ public:
 	void Construct(const FArguments& InArgs);
 
 protected:
-	virtual FReply OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 	virtual FReply OnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 	TSharedPtr<SWidget> BuildContextMenuContent();
 	void OnContextMenuClosed(TSharedRef<IMenu> Menu);
-	void Test();
-	bool CanTest();
+	void Pin();
+	bool CanPin();
+	void Unpin();
+	void LocateInBrowser();
 
 protected:
 	/** Whether to disable the context menu */
 	TAttribute< bool > AllowContextMenu;
+
+	FString AssetPath;
 
 	FActiveContextMenu ActiveContextMenu;
 };

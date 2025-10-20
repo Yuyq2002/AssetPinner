@@ -28,10 +28,13 @@ public:
 	void SetAssetData(const FString& Path, const FAssetData& Asset);
 	void SetParentRef(UPinnedSectionBase* ParentReference);
 	void RecheckInput(FKey Input);
+	FString GetAssetPath();
+	void SetSize(int Width, int Height);
 
+private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
 	USizeBox* SizeBox;
-private:
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
 	UExtendedBorder* Background;
 
@@ -40,9 +43,6 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
 	UAssetThumbnailWidget* Thumbnail;
-
-	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
-	TSubclassOf<UEditorUtilityWidget> ContextMenuWidget;
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
 	FLinearColor BaseColor;

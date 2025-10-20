@@ -4,6 +4,7 @@
 #include "PinnedSectionBase.h"
 #include "PinnedAssetSubsystem.h"
 #include "Components/WrapBox.h"
+#include "Components/ScrollBox.h"
 #include "EditorUtilityWidgetComponents.h"
 #include "PinnedAssetSlotBase.h"
 #include "AssetRegistry/AssetRegistryModule.h"
@@ -65,7 +66,7 @@ void UPinnedSectionBase::Refresh(const TArray<FString>& List, const TArray<bool>
 
 	PinnedWrapBox->ClearChildren();
 	RecentWrapBox->ClearChildren();
-	SizeBoxes.Empty();
+	Slots.Empty();
 
 	for (int i = 0; i < List.Num(); i++)
 	{
@@ -77,9 +78,8 @@ void UPinnedSectionBase::Refresh(const TArray<FString>& List, const TArray<bool>
 		UPinnedAssetSlotBase* NewSlot = CreateWidget<UPinnedAssetSlotBase>(this, AssetSlotWidget);
 		NewSlot->SetAssetData(List[i], Assets[0]);
 		NewSlot->SetParentRef(this);
-		NewSlot->SizeBox->SetHeightOverride(Size * Ratio);
-		NewSlot->SizeBox->SetWidthOverride(Size);
-		SizeBoxes.Add(NewSlot->SizeBox);
+		NewSlot->SetSize(Size, Size * Ratio);
+		Slots.Add(NewSlot);
 
 		if (StatusList[i])
 			PinnedWrapBox->AddChildToWrapBox(NewSlot);
@@ -106,6 +106,8 @@ FReply UPinnedSectionBase::NativeOnKeyDown(const FGeometry& InGeometry, const FK
 	{
 		EditMode = EditState::InEditMode;
 		RecallEditAction->RecheckInput(MouseInput);
+		PinnedScrollBox->SetIsEnabled(false);
+		RecentScrollBox->SetIsEnabled(false);
 	}
 	return FReply::Handled();
 }
@@ -113,7 +115,11 @@ FReply UPinnedSectionBase::NativeOnKeyDown(const FGeometry& InGeometry, const FK
 FReply UPinnedSectionBase::NativeOnKeyUp(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
 {
 	if (InKeyEvent.GetKey() == EKeys::LeftControl)
+	{
 		EditMode = EditState::NotInEditMode;
+		PinnedScrollBox->SetIsEnabled(true);
+		RecentScrollBox->SetIsEnabled(true);
+	}
 	return FReply::Handled();
 }
 
@@ -124,10 +130,9 @@ FReply UPinnedSectionBase::NativeOnMouseWheel(const FGeometry& InGeometry, const
 		Size += InMouseEvent.GetWheelDelta() * 10;
 		Size = FMath::Max(Size, MinSize);
 
-		for (auto SizeBox : SizeBoxes)
+		for (auto PinSlot : Slots)
 		{
-			SizeBox->SetHeightOverride(Size * Ratio);
-			SizeBox->SetWidthOverride(Size);
+			PinSlot->SetSize(Size, Size * Ratio);
 		}
 		return FReply::Handled();
 	}

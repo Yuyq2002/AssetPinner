@@ -17,6 +17,7 @@ void UPinnedAssetSlotBase::SetAssetData(const FString& Path, const FAssetData& A
 		Name->SetText(FText::FromString(FPackageName::GetShortName(*Path)));
 
 	Thumbnail->SetAsset(Asset);
+	Background->Path = Path;
 }
 
 void UPinnedAssetSlotBase::SetParentRef(UPinnedSectionBase* ParentReference)
@@ -34,6 +35,18 @@ void UPinnedAssetSlotBase::RecheckInput(FKey Input)
 		Subsystem->MoveAssetPath(AssetPath);
 	else if (Input == EKeys::RightMouseButton)
 		Subsystem->RemoveAssetPath(AssetPath);
+}
+
+FString UPinnedAssetSlotBase::GetAssetPath()
+{
+	return AssetPath;
+}
+
+void UPinnedAssetSlotBase::SetSize(int Width, int Height)
+{
+	SizeBox->SetHeightOverride(Height);
+	SizeBox->SetWidthOverride(Width);
+	Thumbnail->SetResolution(FIntPoint(Width));
 }
 
 FReply UPinnedAssetSlotBase::NativeOnMouseButtonDoubleClick(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
@@ -91,9 +104,6 @@ FReply UPinnedAssetSlotBase::NativeOnMouseButtonDown(const FGeometry& InGeometry
 	UPinnedAssetSubsystem* Subsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
 	if (!Subsystem)
 		return FReply::Handled();
-
-	if(InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton))
-		Subsystem->MoveAssetPath(AssetPath);
 
 	if (InMouseEvent.IsMouseButtonDown(EKeys::RightMouseButton))
 		Subsystem->RemoveAssetPath(AssetPath);

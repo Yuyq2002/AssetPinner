@@ -10,6 +10,7 @@ class UWrapBox;
 class UEditorUtilityButton;
 class UPinnedAssetSlotBase;
 class USizeBox;
+class UScrollBox;
 
 enum class EditState
 {
@@ -53,7 +54,13 @@ private:
 	TSubclassOf<UEditorUtilityWidget> AssetSlotWidget;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
+	UScrollBox* PinnedScrollBox;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
 	UWrapBox* PinnedWrapBox;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
+	UScrollBox* RecentScrollBox;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
 	UWrapBox* RecentWrapBox;
@@ -68,7 +75,7 @@ private:
 	FKey MouseInput;
 
 	UPROPERTY()
-	TArray<USizeBox*> SizeBoxes;
+	TArray<UPinnedAssetSlotBase*> Slots;
 
 	float MinSize = 30;
 	float Size = 100;

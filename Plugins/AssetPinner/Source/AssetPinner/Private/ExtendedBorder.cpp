@@ -1,6 +1,7 @@
 #include "ExtendedBorder.h"
 #include "ExtendedSlateBorder.h"
 #include "Components/BorderSlot.h"
+#include "PinnedAssetSlotBase.h"
 
 UExtendedBorder::UExtendedBorder(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) 
 {
@@ -11,7 +12,8 @@ UExtendedBorder::UExtendedBorder(const FObjectInitializer& ObjectInitializer) : 
 TSharedRef<SWidget> UExtendedBorder::RebuildWidget()
 {
 	MyBorder = SNew(SExtendedSlateBorder)
-		.FlipForRightToLeftFlowDirection(bFlipForRightToLeftFlowDirection);
+		.FlipForRightToLeftFlowDirection(bFlipForRightToLeftFlowDirection)
+		.AssetPath(Path);
 
 	if (GetChildrenCount() > 0)
 	{

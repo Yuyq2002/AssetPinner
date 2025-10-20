@@ -27,6 +27,7 @@ public:
 	void RemoveAssetPath(FString Path);
 	void MoveAssetPath(FString Path);
 	void ClearRecent();
+	bool GetStatus(FString Path);
 	const TArray<FString>& GetAssetPathList();
 	const TArray<bool>& GetStatusList();
 

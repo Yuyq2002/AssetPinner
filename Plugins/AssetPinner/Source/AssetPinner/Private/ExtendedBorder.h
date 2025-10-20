@@ -11,5 +11,6 @@ class UExtendedBorder : public UBorder
 
 public:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
+	FString Path;
 };
 
