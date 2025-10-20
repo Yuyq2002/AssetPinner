@@ -7,7 +7,8 @@
 #include <ContentBrowserModule.h>
 #include "PinAssetAction.h"
 #include <LevelEditor.h>
-
+#include "PinnedAssetSubsystem.h"
+#include "Enums.h"
 #define LOCTEXT_NAMESPACE "FAssetPinnerModule"
 
 void FAssetPinnerModule::StartupModule()
@@ -82,16 +83,23 @@ void FAssetPinnerModule::AddContentBrowserContextMenuExtender()
 {
     FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
     TArray<FContentBrowserMenuExtender_SelectedAssets>& CBMenuAssetExtenderDelegates = ContentBrowserModule.GetAllAssetViewContextMenuExtenders();
+    TArray<FContentBrowserMenuExtender_SelectedPaths>& CBMenuPathExtenderDelegates = ContentBrowserModule.GetAllPathViewContextMenuExtenders();
 
     CBMenuAssetExtenderDelegates.Add(FContentBrowserMenuExtender_SelectedAssets::CreateStatic(&OnExtendContentBrowserAssetSelectionMenu));
-    ContentBrowserExtenderDelegateHandle = CBMenuAssetExtenderDelegates.Last().GetHandle();
+    ContentBrowserAssetExtenderDelegateHandle = CBMenuAssetExtenderDelegates.Last().GetHandle();
+    CBMenuPathExtenderDelegates.Add(FContentBrowserMenuExtender_SelectedPaths::CreateStatic(&OnExtendContentBrowserPathSelectionMenu));
+    ContentBrowserPathExtenderDelegateHandle = CBMenuPathExtenderDelegates.Last().GetHandle();
 }
 
 void FAssetPinnerModule::RemoveContentBrowserContextMenuExtender()
 {
     FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
+
     TArray<FContentBrowserMenuExtender_SelectedAssets>& CBMenuExtenderDelegates = ContentBrowserModule.GetAllAssetViewContextMenuExtenders();
-    CBMenuExtenderDelegates.RemoveAll([this](const FContentBrowserMenuExtender_SelectedAssets& Delegate) { return Delegate.GetHandle() == ContentBrowserExtenderDelegateHandle; });
+    CBMenuExtenderDelegates.RemoveAll([this](const FContentBrowserMenuExtender_SelectedAssets& Delegate) { return Delegate.GetHandle() == ContentBrowserAssetExtenderDelegateHandle; });
+
+    TArray<FContentBrowserMenuExtender_SelectedPaths>& CBMenuPathExtenderDelegates = ContentBrowserModule.GetAllPathViewContextMenuExtenders();
+    CBMenuPathExtenderDelegates.RemoveAll([this](const FContentBrowserMenuExtender_SelectedPaths& Delegate) { return Delegate.GetHandle() == ContentBrowserPathExtenderDelegateHandle; });
 }
 
 void FAssetPinnerModule::AddMenuExtention(FMenuBuilder& MenuBuilder)
@@ -117,10 +125,22 @@ TSharedRef<FExtender> FAssetPinnerModule::OnExtendContentBrowserAssetSelectionMe
 {
     TSharedRef<FExtender> Extender = MakeShared<FExtender>();
     Extender->AddMenuExtension(
-        "GetAssetActions",
-        EExtensionHook::Before,
+        "AssetContextCollections",
+        EExtensionHook::After,
         nullptr,
         FMenuExtensionDelegate::CreateStatic(&ExecutePinAsset, SelectedAssets)
+    );
+    return Extender;
+}
+
+TSharedRef<FExtender> FAssetPinnerModule::OnExtendContentBrowserPathSelectionMenu(const TArray<FString>& SelectedAssets)
+{
+    TSharedRef<FExtender> Extender = MakeShared<FExtender>();
+    Extender->AddMenuExtension(
+        "PathContextBulkOperations",
+        EExtensionHook::After,
+        nullptr,
+        FMenuExtensionDelegate::CreateStatic(&ExecutePinPath, SelectedAssets)
     );
     return Extender;
 }
@@ -142,6 +162,27 @@ void FAssetPinnerModule::ExecutePinAsset(FMenuBuilder& MenuBuilder, const TArray
 			EUserInterfaceActionType::Button);
 	}
 	MenuBuilder.EndSection();
+}
+
+void FAssetPinnerModule::ExecutePinPath(FMenuBuilder& MenuBuilder, const TArray<FString> SelectedAssets)
+{
+    MenuBuilder.BeginSection("Pin Asset", LOCTEXT("ASSET_CONTEXT", "Pin Asset"));
+    {
+        // Add Menu Entry Here
+        MenuBuilder.AddMenuEntry(
+            LOCTEXT("ButtonName", "Pin Path"),
+            LOCTEXT("Button ToolTip", "Pin Path"),
+            FSlateIcon(FAppStyle::GetAppStyleSetName(), "ViewportActorPreview.Pinned"),
+            FUIAction(FExecuteAction::CreateLambda([SelectedAssets]()
+                {
+                    UPinnedAssetSubsystem* Subsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
+                    if (Subsystem)
+                        Subsystem->AddAssetPath(SelectedAssets[0], EPathType::Folder);
+                })),
+            NAME_None,
+            EUserInterfaceActionType::Button);
+    }
+    MenuBuilder.EndSection();
 }
 
 void FAssetPinnerModule::PrintString()

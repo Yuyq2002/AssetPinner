@@ -166,13 +166,25 @@ void SExtendedSlateBorder::Unpin()
 
 void SExtendedSlateBorder::LocateInBrowser()
 {
-	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
-	IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
-	TArray<FAssetData> Assets;
-	AssetRegistry.GetAssetsByPackageName(FName(AssetPath), Assets);
-	if (Assets.Num() <= 0)
+	UPinnedAssetSubsystem* Subsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
+	if (!Subsystem)
 		return;
 
 	FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
-	ContentBrowserModule.Get().SyncBrowserToAssets(Assets);
+	if (Subsystem->GetPathType(AssetPath) == EPathType::Folder)
+	{
+		TArray<FString> Path{ AssetPath };
+		ContentBrowserModule.Get().SyncBrowserToFolders(Path);
+	}
+	else
+	{
+		FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
+		IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
+		TArray<FAssetData> Assets;
+		AssetRegistry.GetAssetsByPackageName(FName(AssetPath), Assets);
+		if (Assets.Num() <= 0)
+			return;
+
+		ContentBrowserModule.Get().SyncBrowserToAssets(Assets);
+	}
 }

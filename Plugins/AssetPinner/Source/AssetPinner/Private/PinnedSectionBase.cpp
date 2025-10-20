@@ -8,6 +8,10 @@
 #include "EditorUtilityWidgetComponents.h"
 #include "PinnedAssetSlotBase.h"
 #include "AssetRegistry/AssetRegistryModule.h"
+#include "IImageWrapper.h" 
+#include "IImageWrapperModule.h" 
+#include <ObjectTools.h>
+#include <ImageUtils.h>
 
 void UPinnedSectionBase::NativeConstruct()
 {
@@ -16,7 +20,7 @@ void UPinnedSectionBase::NativeConstruct()
 	if (!GEditor)
 		return;
 
-	UPinnedAssetSubsystem* PinnedAssetSubsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
+	PinnedAssetSubsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
 	if (!PinnedAssetSubsystem)
 		return;
 
@@ -30,7 +34,7 @@ void UPinnedSectionBase::NativeConstruct()
 		Size = FCString::Atof(*Data);
 	}
 
-	Refresh(PinnedAssetSubsystem->GetAssetPathList(), PinnedAssetSubsystem->GetStatusList());
+	Refresh(PinnedAssetSubsystem->GetAssetPathList(), PinnedAssetSubsystem->GetStatusList(), PinnedAssetSubsystem->GetPathTypes());
 
 	ClearButton->OnClicked.AddDynamic(this, &UPinnedSectionBase::OnClearButtonClicked);
 }
@@ -52,12 +56,12 @@ void UPinnedSectionBase::AddRecheck(UPinnedAssetSlotBase* Caller, FKey Input)
 	MouseInput = Input;
 }
 
-void UPinnedSectionBase::OnListChangedCallback(const TArray<FString>& List, const TArray<bool>& StatusList)
+void UPinnedSectionBase::OnListChangedCallback(const TArray<FString>& List, const TArray<bool>& StatusList, const TArray<EPathType>& PathTypes)
 {
-	Refresh(List, StatusList);
+	Refresh(List, StatusList, PathTypes);
 }
 
-void UPinnedSectionBase::Refresh(const TArray<FString>& List, const TArray<bool>& StatusList)
+void UPinnedSectionBase::Refresh(const TArray<FString>& List, const TArray<bool>& StatusList, const TArray<EPathType>& PathTypes)
 {
 	if (!AssetSlotWidget) return;
 
@@ -72,13 +76,16 @@ void UPinnedSectionBase::Refresh(const TArray<FString>& List, const TArray<bool>
 	{
 		TArray<FAssetData> Assets;
 		AssetRegistry.GetAssetsByPackageName(FName(List[i]), Assets);
-		if (Assets.Num() <= 0)
+		if (Assets.Num() <= 0 && PathTypes[i] == EPathType::Asset)
 			continue;
 
 		UPinnedAssetSlotBase* NewSlot = CreateWidget<UPinnedAssetSlotBase>(this, AssetSlotWidget);
-		NewSlot->SetAssetData(List[i], Assets[0]);
-		NewSlot->SetParentRef(this);
+		NewSlot->SetAssetData(List[i], PathTypes[i]);
 		NewSlot->SetSize(Size, Size * Ratio);
+		if (PathTypes[i] == EPathType::Asset)
+			NewSlot->SetThumbnail(GetObjectThumbnailAsTexture2D(Assets[0]));
+		else
+			NewSlot->SetThumbnail(PinnedAssetSubsystem->FolderIcon);
 		Slots.Add(NewSlot);
 
 		if (StatusList[i])
@@ -92,7 +99,7 @@ void UPinnedSectionBase::Refresh(const TArray<FString>& List, const TArray<bool>
 
 void UPinnedSectionBase::OnClearButtonClicked()
 {
-	UPinnedAssetSubsystem* PinnedAssetSubsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
+	PinnedAssetSubsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
 	if (!PinnedAssetSubsystem)
 		return;
 
@@ -105,7 +112,6 @@ FReply UPinnedSectionBase::NativeOnKeyDown(const FGeometry& InGeometry, const FK
 	if (InKeyEvent.GetKey() == EKeys::LeftControl)
 	{
 		EditMode = EditState::InEditMode;
-		RecallEditAction->RecheckInput(MouseInput);
 		PinnedScrollBox->SetIsEnabled(false);
 		RecentScrollBox->SetIsEnabled(false);
 	}
@@ -150,4 +156,34 @@ void UPinnedSectionBase::NativeOnFocusLost(const FFocusEvent& InFocusEvent)
 {
 	EditMode = EditState::Unfocused;
 	RecallEditAction = nullptr;
+}
+
+UTexture2D* UPinnedSectionBase::GetObjectThumbnailAsTexture2D(const FAssetData& AssetData)
+{
+	UTexture2D* CreatedTexture = nullptr;
+
+	FString PackageFilename;
+	const FName ObjectFullName = FName(*AssetData.GetFullName());
+	TSet<FName> ObjectFullNames;
+	ObjectFullNames.Add(ObjectFullName);
+	if (FPackageName::DoesPackageExist(AssetData.PackageName.ToString(), &PackageFilename))
+	{
+		FThumbnailMap ThumbnailMap;
+		ThumbnailTools::LoadThumbnailsFromPackage(PackageFilename, ObjectFullNames,
+			ThumbnailMap);
+
+		FObjectThumbnail* objTN = ThumbnailMap.Find(ObjectFullName);
+
+		IImageWrapperModule& ImageWrapperModule = FModuleManager::Get().LoadModuleChecked<IImageWrapperModule>(TEXT("ImageWrapper"));
+		TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(EImageFormat::PNG);
+
+		ImageWrapper->SetRaw(objTN->GetUncompressedImageData().GetData(), objTN->GetUncompressedImageData().Num(), objTN->GetImageWidth(), objTN->GetImageHeight(), ERGBFormat::BGRA, 8);
+		const TArray64<uint8>& CompressedByteArray = ImageWrapper->GetCompressed();
+
+		CreatedTexture = FImageUtils::ImportBufferAsTexture2D(CompressedByteArray);
+
+		return CreatedTexture;
+	}
+	else
+		return nullptr;
 }

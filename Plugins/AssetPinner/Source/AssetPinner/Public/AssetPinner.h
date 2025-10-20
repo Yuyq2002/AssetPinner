@@ -19,10 +19,13 @@ private:
 	void RemoveContentBrowserContextMenuExtender();
 	void AddMenuExtention(FMenuBuilder& MenuBuilder);
 	static TSharedRef<FExtender> OnExtendContentBrowserAssetSelectionMenu(const TArray<FAssetData>& SelectedAssets);
+	static TSharedRef<FExtender> OnExtendContentBrowserPathSelectionMenu(const TArray<FString>& SelectedAssets);
 	static void ExecutePinAsset(FMenuBuilder& MenuBuilder, const TArray<FAssetData> SelectedAssets);
+	static void ExecutePinPath(FMenuBuilder& MenuBuilder, const TArray<FString> SelectedAssets);
 	static void PrintString();
 
 private:
-	FDelegateHandle ContentBrowserExtenderDelegateHandle;
+	FDelegateHandle ContentBrowserPathExtenderDelegateHandle;
+	FDelegateHandle ContentBrowserAssetExtenderDelegateHandle;
 
 };

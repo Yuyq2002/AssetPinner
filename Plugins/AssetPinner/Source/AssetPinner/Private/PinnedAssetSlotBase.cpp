@@ -8,34 +8,26 @@
 #include "PinnedSectionBase.h"
 #include "PinnedAssetSubsystem.h"
 #include "Components\AssetThumbnailWidget.h"
+#include <ContentBrowserModule.h>
+#include "IContentBrowserSingleton.h"
 
-void UPinnedAssetSlotBase::SetAssetData(const FString& Path, const FAssetData& Asset)
+void UPinnedAssetSlotBase::SetAssetData(const FString& Path, EPathType Type)
 {
 	AssetPath = Path;
 
 	if(Name)
 		Name->SetText(FText::FromString(FPackageName::GetShortName(*Path)));
-
-	Thumbnail->SetAsset(Asset);
+	
 	Background->Path = Path;
+
+	PathType = Type;
 }
 
-void UPinnedAssetSlotBase::SetParentRef(UPinnedSectionBase* ParentReference)
+void UPinnedAssetSlotBase::SetThumbnail(UTexture2D* ThumbnailTexture)
 {
-	ParentRef = ParentReference;
+	Thumbnail->SetBrushFromTexture(ThumbnailTexture);
 }
 
-void UPinnedAssetSlotBase::RecheckInput(FKey Input)
-{
-	UPinnedAssetSubsystem* Subsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
-	if (!Subsystem)
-		return;
-
-	if (Input == EKeys::LeftMouseButton)
-		Subsystem->MoveAssetPath(AssetPath);
-	else if (Input == EKeys::RightMouseButton)
-		Subsystem->RemoveAssetPath(AssetPath);
-}
 
 FString UPinnedAssetSlotBase::GetAssetPath()
 {
@@ -46,13 +38,22 @@ void UPinnedAssetSlotBase::SetSize(int Width, int Height)
 {
 	SizeBox->SetHeightOverride(Height);
 	SizeBox->SetWidthOverride(Width);
-	Thumbnail->SetResolution(FIntPoint(Width));
 }
 
 FReply UPinnedAssetSlotBase::NativeOnMouseButtonDoubleClick(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	if (!InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton))
 		return FReply::Unhandled();
+
+	if (PathType == EPathType::Folder)
+	{
+		TArray<FString> Assets{ AssetPath };
+
+		FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
+		ContentBrowserModule.Get().SyncBrowserToFolders(Assets);
+
+		return FReply::Handled();
+	}
 
 	TArray<FAssetData> Assets;
 	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
@@ -84,29 +85,6 @@ FReply UPinnedAssetSlotBase::NativeOnMouseButtonDoubleClick(const FGeometry& InG
 	}
 	else
 		UE_LOG(LogTemp, Error, TEXT("Open Asset Window Failed"));
-
-	return FReply::Handled();
-}
-
-FReply UPinnedAssetSlotBase::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
-{
-	EditState State = ParentRef->CheckInEditMode();
-
-	if (!GEditor || State == EditState::NotInEditMode)
-		return FReply::Handled();
-
-	if (State == EditState::Unfocused)
-	{
-		ParentRef->AddRecheck(this, InMouseEvent.GetEffectingButton());
-		return FReply::Handled();
-	}
-
-	UPinnedAssetSubsystem* Subsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
-	if (!Subsystem)
-		return FReply::Handled();
-
-	if (InMouseEvent.IsMouseButtonDown(EKeys::RightMouseButton))
-		Subsystem->RemoveAssetPath(AssetPath);
 
 	return FReply::Handled();
 }

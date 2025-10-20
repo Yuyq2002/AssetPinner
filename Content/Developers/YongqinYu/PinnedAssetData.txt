@@ -1,2 +1,6 @@
-/AssetPinner/BPW_PinnedAssetSlot 1
-/AssetPinner/BPW_PinnedAssetSection 1
+/AssetPinner/BPW_PinnedAssetSection 1 1
+/Game/NewBlueprint 1 1
+/Classes_Game/PluginProject 1 2
+/AssetPinner 1 2
+/Game/NewFolder 1 2
+/AssetPinner/Folder_Base_256x 0 1

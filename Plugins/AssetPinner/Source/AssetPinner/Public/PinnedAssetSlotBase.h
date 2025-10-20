@@ -8,6 +8,8 @@
 #include "Components/SizeBox.h"
 #include "Components/Border.h"
 #include "ExtendedBorder.h"
+#include <Components/Image.h>
+#include "Enums.h"
 #include "PinnedAssetSlotBase.generated.h"
 
 class UTextBlock;
@@ -22,12 +24,12 @@ class ASSETPINNER_API UPinnedAssetSlotBase : public UEditorUtilityWidget
 	GENERATED_BODY()
 	
 	FString AssetPath;
-	UPinnedSectionBase* ParentRef;
+
+	EPathType PathType;
 
 public:
-	void SetAssetData(const FString& Path, const FAssetData& Asset);
-	void SetParentRef(UPinnedSectionBase* ParentReference);
-	void RecheckInput(FKey Input);
+	void SetAssetData(const FString& Path, EPathType Type);
+	void SetThumbnail(UTexture2D* ThumbnailTexture);
 	FString GetAssetPath();
 	void SetSize(int Width, int Height);
 
@@ -42,7 +44,7 @@ private:
 	UTextBlock* Name;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
-	UAssetThumbnailWidget* Thumbnail;
+	UImage* Thumbnail;
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
 	FLinearColor BaseColor;
@@ -51,7 +53,7 @@ private:
 	FLinearColor HoverColor;
 
 	virtual FReply NativeOnMouseButtonDoubleClick(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
-	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) override;
+
 };

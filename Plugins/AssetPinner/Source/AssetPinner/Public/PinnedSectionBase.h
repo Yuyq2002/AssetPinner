@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "EditorUtilityWidget.h"
+#include "Enums.h"
 #include "PinnedSectionBase.generated.h"
 
 class UWrapBox;
@@ -11,6 +12,7 @@ class UEditorUtilityButton;
 class UPinnedAssetSlotBase;
 class USizeBox;
 class UScrollBox;
+class UPinnedAssetSubsystem;
 
 enum class EditState
 {
@@ -35,8 +37,8 @@ public:
 
 private:
 	UFUNCTION()
-	void OnListChangedCallback(const TArray<FString>& List, const TArray<bool>& StatusList);
-	void Refresh(const TArray<FString>& List, const TArray<bool>& StatusList);
+	void OnListChangedCallback(const TArray<FString>& List, const TArray<bool>& StatusList, const TArray<EPathType>& PathTypes);
+	void Refresh(const TArray<FString>& List, const TArray<bool>& StatusList, const TArray<EPathType>& PathTypes);
 
 	UFUNCTION()
 	void OnClearButtonClicked();
@@ -46,6 +48,8 @@ private:
 	virtual FReply NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual FReply NativeOnFocusReceived(const FGeometry& InGeometry, const FFocusEvent& InFocusEvent) override;
 	virtual void NativeOnFocusLost(const FFocusEvent& InFocusEvent) override;
+
+	UTexture2D* GetObjectThumbnailAsTexture2D(const FAssetData& AssetData);
 
 private:
 	EditState EditMode;
@@ -81,4 +85,7 @@ private:
 	float Size = 100;
 	float Ratio = 1.25;
 	FString ConfigPath;
+
+	UPROPERTY()
+	UPinnedAssetSubsystem* PinnedAssetSubsystem;
 };
