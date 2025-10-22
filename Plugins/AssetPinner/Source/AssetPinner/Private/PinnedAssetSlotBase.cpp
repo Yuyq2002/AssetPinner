@@ -11,12 +11,15 @@
 #include <ContentBrowserModule.h>
 #include "IContentBrowserSingleton.h"
 
-void UPinnedAssetSlotBase::SetAssetData(const FString& Path, EPathType Type)
+void UPinnedAssetSlotBase::SetAssetData(const FString& Path, EPathType Type, const FString& AlternativeName)
 {
 	AssetPath = Path;
 
-	if(Name)
-		Name->SetText(FText::FromString(FPackageName::GetShortName(*Path)));
+	if (Name)
+		if (AlternativeName.IsEmpty())
+			Name->SetText(FText::FromString(FPackageName::GetShortName(*Path)));
+		else
+			Name->SetText(FText::FromString(AlternativeName));
 	
 	Background->Path = Path;
 

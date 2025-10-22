@@ -28,7 +28,7 @@ class ASSETPINNER_API UPinnedAssetSlotBase : public UEditorUtilityWidget
 	EPathType PathType;
 
 public:
-	void SetAssetData(const FString& Path, EPathType Type);
+	void SetAssetData(const FString& Path, EPathType Type, const FString& AlternativeName);
 	void SetThumbnail(UTexture2D* ThumbnailTexture);
 	FString GetAssetPath();
 	void SetSize(int Width, int Height);

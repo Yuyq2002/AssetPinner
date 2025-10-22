@@ -7,40 +7,38 @@
 void UPinnedAssetSubsystem::AddAssetPath(FString Path, EPathType Type, bool IsPinned)
 {
 	bool SaveData = false;
-	if (!AssetPathList.Contains(Path))
+	if (!ContainsPath(Path))
 	{
-		AssetPathList.Add(Path);
-		StatusList.Add(IsPinned);
-		PathTypes.Add(Type);
+		AssetDataList.Add(FPinnedAssetData(Path, IsPinned, Type));
 
 		SaveData = true;
 
 		if (OnListChangedDelegate.IsBound())
-			OnListChangedDelegate.Execute(AssetPathList, StatusList, PathTypes);
+			OnListChangedDelegate.Execute(AssetDataList);
 	}
 	else
 	{
 		int Index = -1;
-		if (AssetPathList.Find(Path, Index))
+		if (FindPath(Path, Index))
 		{
-			if (StatusList[Index] || !IsPinned)
+			if (AssetDataList[Index].PinnedStatus || !IsPinned)
 				return;
 
-			StatusList[Index] = true;
+			AssetDataList[Index].PinnedStatus = true;
 
 			SaveData = true;
 
 			if (OnListChangedDelegate.IsBound())
-				OnListChangedDelegate.Execute(AssetPathList, StatusList, PathTypes);
+				OnListChangedDelegate.Execute(AssetDataList);
 		}
 	}
 
 	if (SaveData)
 	{
 		TArray<FString> SaveList;
-		for (int i = 0; i < AssetPathList.Num(); i++)
+		for (const auto& Data : AssetDataList)
 		{
-			SaveList.Add(AssetPathList[i] + ' ' + (StatusList[i] ? '1' : '0') + ' ' + FString::FromInt((int)PathTypes[i]));
+			SaveList.Add(Data.GetSaveString());
 		}
 		FFileHelper::SaveStringArrayToFile(SaveList, *FilePath);
 	}
@@ -49,75 +47,83 @@ void UPinnedAssetSubsystem::AddAssetPath(FString Path, EPathType Type, bool IsPi
 void UPinnedAssetSubsystem::RemoveAssetPath(FString Path)
 {
 	int Index = -1;
-	if (AssetPathList.Find(Path, Index))
+	if (FindPath(Path, Index))
 	{
-		AssetPathList.RemoveAt(Index);
-		StatusList.RemoveAt(Index);
-		PathTypes.RemoveAt(Index);
+		AssetDataList.RemoveAt(Index);
 
 		TArray<FString> SaveList;
-		for (int i = 0; i < AssetPathList.Num(); i++)
+		for (const auto& Data : AssetDataList)
 		{
-			SaveList.Add(AssetPathList[i] + ' ' + (StatusList[i] ? '1' : '0') + ' ' + FString::FromInt((int)PathTypes[i]));
+			SaveList.Add(Data.GetSaveString());
 		}
 		FFileHelper::SaveStringArrayToFile(SaveList, *FilePath);
 
 		if (OnListChangedDelegate.IsBound())
-			OnListChangedDelegate.Execute(AssetPathList, StatusList, PathTypes);
+			OnListChangedDelegate.Execute(AssetDataList);
 	}
 }
 
 void UPinnedAssetSubsystem::MoveAssetPath(FString Path)
 {
 	int Index = -1;
-	if (AssetPathList.Find(Path, Index))
+	if (FindPath(Path, Index))
 	{
-		if (StatusList[Index])
+		if (AssetDataList[Index].PinnedStatus)
 			return;
 
-		StatusList[Index] = true;
+		AssetDataList[Index].PinnedStatus = true;
 
 		TArray<FString> SaveList;
-		for (int i = 0; i < AssetPathList.Num(); i++)
+		for (const auto& Data : AssetDataList)
 		{
-			SaveList.Add(AssetPathList[i] + ' ' + (StatusList[i] ? '1' : '0') + ' ' + FString::FromInt((int)PathTypes[i]));
+			SaveList.Add(Data.GetSaveString());
 		}
 		FFileHelper::SaveStringArrayToFile(SaveList, *FilePath);
 
 		if (OnListChangedDelegate.IsBound())
-			OnListChangedDelegate.Execute(AssetPathList, StatusList, PathTypes);
+			OnListChangedDelegate.Execute(AssetDataList);
 	}
 }
 
 void UPinnedAssetSubsystem::ClearRecent()
 {
-	for (int i = 0; i < AssetPathList.Num(); i++)
-	{
-		if (!StatusList[i])
-		{
-			AssetPathList.RemoveAt(i);
-			StatusList.RemoveAt(i);
-			PathTypes.RemoveAt(i);
-			i--;
-		}
-	}
+	AssetDataList.Empty();
 
 	TArray<FString> SaveList;
-	for (int i = 0; i < AssetPathList.Num(); i++)
+	for (const auto& Data : AssetDataList)
 	{
-		SaveList.Add(AssetPathList[i] + ' ' + (StatusList[i] ? '1' : '0') + ' ' + FString::FromInt((int)PathTypes[i]));
+		SaveList.Add(Data.GetSaveString());
 	}
 	FFileHelper::SaveStringArrayToFile(SaveList, *FilePath);
 
 	if (OnListChangedDelegate.IsBound())
-		OnListChangedDelegate.Execute(AssetPathList, StatusList, PathTypes);
+		OnListChangedDelegate.Execute(AssetDataList);
+}
+
+void UPinnedAssetSubsystem::RenamePinnedAsset(FString Path, FString NewName)
+{
+	int Index = -1;
+	if (FindPath(Path, Index))
+	{
+		AssetDataList[Index].AlternativeName = NewName;
+
+		TArray<FString> SaveList;
+		for (const auto& Data : AssetDataList)
+		{
+			SaveList.Add(Data.GetSaveString());
+		}
+		FFileHelper::SaveStringArrayToFile(SaveList, *FilePath);
+
+		if (OnListChangedDelegate.IsBound())
+			OnListChangedDelegate.Execute(AssetDataList);
+	}
 }
 
 bool UPinnedAssetSubsystem::GetStatus(FString Path)
 {
 	int Index = -1;
-	if (AssetPathList.Find(Path, Index))
-		return StatusList[Index];
+	if (FindPath(Path, Index))
+		return AssetDataList[Index].PinnedStatus;
 
 	return false;
 }
@@ -125,25 +131,42 @@ bool UPinnedAssetSubsystem::GetStatus(FString Path)
 EPathType UPinnedAssetSubsystem::GetPathType(FString Path)
 {
 	int Index = -1;
-	if (AssetPathList.Find(Path, Index))
-		return PathTypes[Index];
+	if (FindPath(Path, Index))
+		return AssetDataList[Index].PathType;
 
 	return EPathType::None;
 }
 
-const TArray<FString>& UPinnedAssetSubsystem::GetAssetPathList()
+const TArray<FPinnedAssetData>& UPinnedAssetSubsystem::GetAssetDataList()
 {
-	return AssetPathList;
+	return AssetDataList;
 }
 
-const TArray<bool>& UPinnedAssetSubsystem::GetStatusList()
+bool UPinnedAssetSubsystem::ContainsPath(FString Path)
 {
-	return StatusList;
+	for (const FPinnedAssetData& Data : AssetDataList)
+		if (Data.AssetPath.Equals(Path))
+			return true;
+
+	return false;
 }
 
-const TArray<EPathType>& UPinnedAssetSubsystem::GetPathTypes()
+bool UPinnedAssetSubsystem::FindPath(FString Path, int& OutIndex)
 {
-	return PathTypes;
+	int Index = 0;
+	for (const FPinnedAssetData& Data : AssetDataList)
+	{
+		if (Data.AssetPath.Equals(Path))
+		{
+			OutIndex = Index;
+			return true;
+		}
+
+		Index++;
+	}
+
+	OutIndex = -1;
+	return false;
 }
 
 void UPinnedAssetSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -160,32 +183,31 @@ void UPinnedAssetSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	{
 		TArray<FString> SplitString;
 		line.ParseIntoArray(SplitString, TEXT(" "));
-		AssetPathList.Add(SplitString[0]);
-		StatusList.Add(SplitString[1] == "1");
-		PathTypes.Add(SplitString.IsValidIndex(2) ? (EPathType)FCString::Atoi(*SplitString[2]) : EPathType::Asset);
+		AssetDataList.Add(FPinnedAssetData(
+			SplitString[0], 
+			SplitString[1] == "1", 
+			SplitString.IsValidIndex(2) ? (EPathType)FCString::Atoi(*SplitString[2]) : EPathType::Asset,
+			SplitString.IsValidIndex(3) ? SplitString[3] : ""
+		));
 	}
 
-	for (int i = 0; i < AssetPathList.Num(); i++)
+	for (int i = 0; i < AssetDataList.Num(); i++)
 	{
 		FPackagePath OutPath;
 		FPackagePath PackagePath;
-		if (FPackagePath::TryFromPackageName(AssetPathList[i], PackagePath) || PathTypes[i] != EPathType::Asset)
+		if (FPackagePath::TryFromPackageName(AssetDataList[i].AssetPath, PackagePath) || AssetDataList[i].PathType != EPathType::Asset)
 		{
-			if (!FPackageName::DoesPackageExist(PackagePath, &OutPath) && PathTypes[i] == EPathType::Asset)
+			if (!FPackageName::DoesPackageExist(PackagePath, &OutPath) && AssetDataList[i].PathType == EPathType::Asset)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Cannot find file: %s"), *AssetPathList[i]);
-				AssetPathList.RemoveAt(i);
-				StatusList.RemoveAt(i);
-				PathTypes.RemoveAt(i);
+				UE_LOG(LogTemp, Warning, TEXT("Cannot find file: %s"), *AssetDataList[i].AssetPath);
+				AssetDataList.RemoveAt(i);
 				i--;
 			}
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Cannot find file: %s"), *AssetPathList[i]);
-			AssetPathList.RemoveAt(i);
-			StatusList.RemoveAt(i);
-			PathTypes.RemoveAt(i);
+			UE_LOG(LogTemp, Warning, TEXT("Cannot find file: %s"), *AssetDataList[i].AssetPath);
+			AssetDataList.RemoveAt(i);
 			i--;
 		}
 	}

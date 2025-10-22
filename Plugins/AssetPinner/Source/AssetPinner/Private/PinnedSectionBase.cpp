@@ -34,14 +34,14 @@ void UPinnedSectionBase::NativeConstruct()
 		Size = FCString::Atof(*Data);
 	}
 
-	Refresh(PinnedAssetSubsystem->GetAssetPathList(), PinnedAssetSubsystem->GetStatusList(), PinnedAssetSubsystem->GetPathTypes());
+	Refresh(PinnedAssetSubsystem->GetAssetDataList());
 
 	ClearButton->OnClicked.AddDynamic(this, &UPinnedSectionBase::OnClearButtonClicked);
 }
 
 void UPinnedSectionBase::NativeDestruct()
 {
-	FFileHelper::SaveStringToFile(FString::SanitizeFloat(Size), *ConfigPath);
+	//FFileHelper::SaveStringToFile(FString::SanitizeFloat(Size), *ConfigPath);
 }
 
 EditState UPinnedSectionBase::CheckInEditMode()
@@ -56,12 +56,12 @@ void UPinnedSectionBase::AddRecheck(UPinnedAssetSlotBase* Caller, FKey Input)
 	MouseInput = Input;
 }
 
-void UPinnedSectionBase::OnListChangedCallback(const TArray<FString>& List, const TArray<bool>& StatusList, const TArray<EPathType>& PathTypes)
+void UPinnedSectionBase::OnListChangedCallback(const TArray<FPinnedAssetData>& List)
 {
-	Refresh(List, StatusList, PathTypes);
+	Refresh(List);
 }
 
-void UPinnedSectionBase::Refresh(const TArray<FString>& List, const TArray<bool>& StatusList, const TArray<EPathType>& PathTypes)
+void UPinnedSectionBase::Refresh(const TArray<FPinnedAssetData>& List)
 {
 	if (!AssetSlotWidget) return;
 
@@ -72,23 +72,23 @@ void UPinnedSectionBase::Refresh(const TArray<FString>& List, const TArray<bool>
 	RecentWrapBox->ClearChildren();
 	Slots.Empty();
 
-	for (int i = 0; i < List.Num(); i++)
+	for (const auto& Data : List)
 	{
 		TArray<FAssetData> Assets;
-		AssetRegistry.GetAssetsByPackageName(FName(List[i]), Assets);
-		if (Assets.Num() <= 0 && PathTypes[i] == EPathType::Asset)
+		AssetRegistry.GetAssetsByPackageName(FName(Data.AssetPath), Assets);
+		if (Assets.Num() <= 0 && Data.PathType == EPathType::Asset)
 			continue;
 
 		UPinnedAssetSlotBase* NewSlot = CreateWidget<UPinnedAssetSlotBase>(this, AssetSlotWidget);
-		NewSlot->SetAssetData(List[i], PathTypes[i]);
+		NewSlot->SetAssetData(Data.AssetPath, Data.PathType, Data.AlternativeName);
 		NewSlot->SetSize(Size, Size * Ratio);
-		if (PathTypes[i] == EPathType::Asset)
+		if (Data.PathType == EPathType::Asset)
 			NewSlot->SetThumbnail(GetObjectThumbnailAsTexture2D(Assets[0]));
 		else
 			NewSlot->SetThumbnail(PinnedAssetSubsystem->FolderIcon);
 		Slots.Add(NewSlot);
 
-		if (StatusList[i])
+		if (Data.PinnedStatus)
 			PinnedWrapBox->AddChildToWrapBox(NewSlot);
 		else
 			RecentWrapBox->AddChildToWrapBox(NewSlot);
@@ -171,6 +171,7 @@ UTexture2D* UPinnedSectionBase::GetObjectThumbnailAsTexture2D(const FAssetData& 
 		FThumbnailMap ThumbnailMap;
 		ThumbnailTools::LoadThumbnailsFromPackage(PackageFilename, ObjectFullNames,
 			ThumbnailMap);
+		const FObjectThumbnail* Test = ThumbnailTools::GetThumbnailForObject(AssetData.GetAsset());
 
 		FObjectThumbnail* objTN = ThumbnailMap.Find(ObjectFullName);
 

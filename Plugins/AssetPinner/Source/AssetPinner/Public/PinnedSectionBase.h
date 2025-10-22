@@ -13,6 +13,7 @@ class UPinnedAssetSlotBase;
 class USizeBox;
 class UScrollBox;
 class UPinnedAssetSubsystem;
+struct FPinnedAssetData;
 
 enum class EditState
 {
@@ -37,8 +38,8 @@ public:
 
 private:
 	UFUNCTION()
-	void OnListChangedCallback(const TArray<FString>& List, const TArray<bool>& StatusList, const TArray<EPathType>& PathTypes);
-	void Refresh(const TArray<FString>& List, const TArray<bool>& StatusList, const TArray<EPathType>& PathTypes);
+	void OnListChangedCallback(const TArray<FPinnedAssetData>& List);
+	void Refresh(const TArray<FPinnedAssetData>& List);
 
 	UFUNCTION()
 	void OnClearButtonClicked();

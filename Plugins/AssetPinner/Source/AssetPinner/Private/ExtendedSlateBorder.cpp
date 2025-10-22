@@ -5,6 +5,7 @@
 #include <ContentBrowserModule.h>
 #include "IContentBrowserSingleton.h"
 #include <AssetRegistry/AssetRegistryModule.h>
+#include "Internationalization/Text.h"
 
 void SExtendedSlateBorder::Construct(const FArguments& InArgs)
 {
@@ -40,21 +41,30 @@ FReply SExtendedSlateBorder::OnMouseButtonUp(const FGeometry& MyGeometry, const 
 			if (MenuContentWidget.IsValid())
 			{
 				ActiveContextMenu.PrepareToSummon();
-
+				ParentWidget = MouseEvent.GetWindow();
 				static const bool bFocusImmediately = true;
-				TSharedPtr<IMenu> ContextMenu = FSlateApplication::Get().PushMenu(
-					MouseEvent.GetWindow(),
-					WidgetPath,
-					MenuContentWidget.ToSharedRef(),
-					MouseEvent.GetScreenSpacePosition(),
-					FPopupTransitionEffect(FPopupTransitionEffect::ContextMenu),
-					bFocusImmediately
-				);
+
+				TSharedPtr<IMenu> ContextMenu;
+				if (ParentWidget.IsValid())
+				{
+					ContextMenu = FSlateApplication::Get().PushMenu(
+						ParentWidget.Pin().ToSharedRef(),
+						WidgetPath,
+						MenuContentWidget.ToSharedRef(),
+						MouseEvent.GetScreenSpacePosition(),
+						FPopupTransitionEffect(FPopupTransitionEffect::ContextMenu),
+						bFocusImmediately
+					);
+				}
 
 				// Make sure the window is valid. It's possible for the parent to already be in the destroy queue, for example if the editable text was configured to dismiss it's window during OnTextCommitted.
 				if (!ContextMenu.IsValid())
 				{
 					ActiveContextMenu.SummonFailed();
+				}
+				else
+				{
+					ContextMenuPosition = MouseEvent.GetScreenSpacePosition();
 				}
 			}
 		}
@@ -79,7 +89,6 @@ TSharedPtr<SWidget> SExtendedSlateBorder::BuildContextMenuContent()
 	{
 		MenuBuilder.BeginSection("EditSection", LOCTEXT("Heading", "Edit Action"));
 		{
-			// Undo
 			FUIAction PinAssetAction(
 				FExecuteAction::CreateRaw(this, &SExtendedSlateBorder::Pin),
 				FCanExecuteAction::CreateSP(this, &SExtendedSlateBorder::CanPin)
@@ -87,6 +96,10 @@ TSharedPtr<SWidget> SExtendedSlateBorder::BuildContextMenuContent()
 
 			FUIAction UnpinAssetAction(
 				FExecuteAction::CreateRaw(this, &SExtendedSlateBorder::Unpin)
+			);
+
+			FUIAction SetAlternativeNameAction(
+				FExecuteAction::CreateRaw(this, &SExtendedSlateBorder::SetAlternativeName)
 			);
 
 			MenuBuilder.AddMenuEntry(
@@ -101,6 +114,13 @@ TSharedPtr<SWidget> SExtendedSlateBorder::BuildContextMenuContent()
 				NSLOCTEXT("AssetPinner", "UnpinAssetTooltip", "Remove the asset from pinned section"),
 				FSlateIcon(),
 				UnpinAssetAction
+			);
+
+			MenuBuilder.AddMenuEntry(
+				NSLOCTEXT("AssetPinner", "RenameLabel", "Set Alternative Name"),
+				NSLOCTEXT("AssetPinner", "RenameTooltip", "Set an alternative name to display"),
+				FSlateIcon(),
+				SetAlternativeNameAction
 			);
 		}
 		MenuBuilder.EndSection();
@@ -132,6 +152,20 @@ void SExtendedSlateBorder::OnContextMenuClosed(TSharedRef<IMenu> Menu)
 	{
 		FSlateApplication::Get().SetKeyboardFocus(OwnerSlateWidget, EFocusCause::OtherWidgetLostFocus);
 	}
+}
+
+void SExtendedSlateBorder::OnRenamed(const FText& Text, ETextCommit::Type CommitType)
+{
+	AltNameHolder = Text.ToString().Replace(TEXT(" "), TEXT("_"));
+
+	if (CommitType != ETextCommit::Type::OnEnter)
+		return;
+
+	UPinnedAssetSubsystem* Subsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
+	if (!Subsystem)
+		return;
+
+	Subsystem->RenamePinnedAsset(AssetPath, AltNameHolder);
 }
 
 void SExtendedSlateBorder::Pin()
@@ -187,4 +221,69 @@ void SExtendedSlateBorder::LocateInBrowser()
 
 		ContentBrowserModule.Get().SyncBrowserToAssets(Assets);
 	}
+}
+
+void SExtendedSlateBorder::SetAlternativeName()
+{
+#define LOCTEXT_NAMESPACE "AssetPinnerRenameMenu"
+	// Set the menu to automatically close when the user commits to a choice
+	const bool bShouldCloseWindowAfterMenuSelection = true;
+
+	// This is a context menu which could be summoned from within another menu if this text block is in a menu
+	// it should not close the menu it is inside
+	bool bCloseSelfOnly = true;
+	FMenuBuilder MenuBuilder(bShouldCloseWindowAfterMenuSelection, TSharedPtr< const FUICommandList >(), nullptr, bCloseSelfOnly, &FCoreStyle::Get());
+	{
+		MenuBuilder.BeginSection("SetAltName", LOCTEXT("Heading", "Set Alternative Name"));
+
+		MenuBuilder.EndSection();
+
+		MenuBuilder.AddEditableText(
+			NSLOCTEXT("AssetPinner", "RenameAssetLabel", "New Display Name"),
+			NSLOCTEXT("AssetPinner", "RenameAssetToolTip", "Enter a new display name for the pinned asset"),
+			FSlateIcon(),
+			NSLOCTEXT("AssetPinner", "DefaultEditableText", ""),
+			FOnTextCommitted::CreateRaw(this, &SExtendedSlateBorder::OnRenamed)
+		);
+
+		MenuBuilder.AddMenuEntry(
+			NSLOCTEXT("AssetPinner", "ConfirmRenameLabel", "Confirm"),
+			NSLOCTEXT("AssetPinner", "ConfirmRenameTooltip", "Confirm setting alternative name"),
+			FSlateIcon(),
+			FUIAction(FExecuteAction::CreateRaw(this, &SExtendedSlateBorder::ConfirmName))
+		);
+
+		MenuBuilder.AddSeparator();
+
+		MenuBuilder.AddMenuEntry(
+			NSLOCTEXT("AssetPinner", "CancelRenameLabel", "Cancel"),
+			NSLOCTEXT("AssetPinner", "CancelRenameTooltip", "Cancel setting alternative name"),
+			FSlateIcon(),
+			FUIAction()
+		);
+	}
+
+	TSharedPtr<SWidget> MenuContentWidget = MenuBuilder.MakeWidget();
+	if (MenuContentWidget.IsValid() && ParentWidget.IsValid())
+	{
+		static const bool bFocusImmediately = true;
+		TSharedPtr<IMenu> ContextMenu = FSlateApplication::Get().PushMenu(
+			ParentWidget.Pin().ToSharedRef(),
+			FWidgetPath(),
+			MenuContentWidget.ToSharedRef(),
+			ContextMenuPosition,
+			FPopupTransitionEffect(FPopupTransitionEffect::ContextMenu),
+			bFocusImmediately
+		);
+	}
+#undef LOCTEXT_NAMESPACE
+}
+
+void SExtendedSlateBorder::ConfirmName()
+{
+	UPinnedAssetSubsystem* Subsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
+	if (!Subsystem)
+		return;
+
+	Subsystem->RenamePinnedAsset(AssetPath, AltNameHolder);
 }

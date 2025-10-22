@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/DeclarativeSyntaxSupport.h"
+#include "PinnedAssetSubsystem.h"
 
 class FActiveContextMenu
 {
@@ -56,6 +57,14 @@ public:
 			ActiveMenuPin->Dismiss();
 		}
 		Reset();
+	}
+
+	TSharedPtr<IMenu> GetActiveMenu()
+	{
+		if(ActiveMenu.IsValid())
+			return ActiveMenu.Pin();
+
+		return TSharedPtr<IMenu>();
 	}
 
 private:
@@ -134,16 +143,23 @@ protected:
 	virtual FReply OnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 	TSharedPtr<SWidget> BuildContextMenuContent();
 	void OnContextMenuClosed(TSharedRef<IMenu> Menu);
+	void OnRenamed(const FText& Text, ETextCommit::Type CommitType);
+
 	void Pin();
 	bool CanPin();
 	void Unpin();
 	void LocateInBrowser();
+	void SetAlternativeName();
+	void ConfirmName();
 
 protected:
 	/** Whether to disable the context menu */
 	TAttribute< bool > AllowContextMenu;
 
 	FString AssetPath;
+	TWeakPtr<SWindow> ParentWidget;
+	FDeprecateSlateVector2D ContextMenuPosition;
+	FString AltNameHolder;
 
 	FActiveContextMenu ActiveContextMenu;
 };

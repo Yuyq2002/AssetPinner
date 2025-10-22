@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "EditorSubsystem.h"
-#include "Enums.h"
+#include "PinnedAssetData.h"
 #include "PinnedAssetSubsystem.generated.h"
 
 /**
@@ -15,12 +15,10 @@ class ASSETPINNER_API UPinnedAssetSubsystem : public UEditorSubsystem
 {
 	GENERATED_BODY()
 	
-	DECLARE_DYNAMIC_DELEGATE_ThreeParams(FAssetPathListChangedSignature, const TArray<FString>&, AssetList, const TArray<bool>&, StatusList, const TArray<EPathType>&, PathTypes);
+	DECLARE_DYNAMIC_DELEGATE_OneParam(FAssetPathListChangedSignature, const TArray<FPinnedAssetData>&, DataList);
 
 	FString FilePath;
-	TArray<FString> AssetPathList;
-	TArray<bool> StatusList;
-	TArray<EPathType> PathTypes;
+	TArray<FPinnedAssetData> AssetDataList;
 
 public:
 	FAssetPathListChangedSignature OnListChangedDelegate;
@@ -29,11 +27,14 @@ public:
 	void RemoveAssetPath(FString Path);
 	void MoveAssetPath(FString Path);
 	void ClearRecent();
+	void RenamePinnedAsset(FString Path, FString NewName);
+
 	bool GetStatus(FString Path);
 	EPathType GetPathType(FString Path);
-	const TArray<FString>& GetAssetPathList();
-	const TArray<bool>& GetStatusList();
-	const TArray<EPathType>& GetPathTypes();
+	const TArray<FPinnedAssetData>& GetAssetDataList();
+
+	bool ContainsPath(FString Path);
+	bool FindPath(FString Path, int& OutIndex);
 
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
