@@ -253,8 +253,6 @@ void SExtendedSlateBorder::SetAlternativeName()
 			FUIAction(FExecuteAction::CreateRaw(this, &SExtendedSlateBorder::ConfirmName))
 		);
 
-		MenuBuilder.AddSeparator();
-
 		MenuBuilder.AddMenuEntry(
 			NSLOCTEXT("AssetPinner", "CancelRenameLabel", "Cancel"),
 			NSLOCTEXT("AssetPinner", "CancelRenameTooltip", "Cancel setting alternative name"),

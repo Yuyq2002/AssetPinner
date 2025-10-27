@@ -10,25 +10,47 @@
 #include "Components\AssetThumbnailWidget.h"
 #include <ContentBrowserModule.h>
 #include "IContentBrowserSingleton.h"
+#include "PinnedAssetData.h"
+#include "Blueprint/WidgetTree.h"
+#include "Components/SizeBoxSlot.h"
 
-void UPinnedAssetSlotBase::SetAssetData(const FString& Path, EPathType Type, const FString& AlternativeName)
+void UPinnedAssetSlotBase::SetAssetData(const FPinnedAssetData& Data)
 {
-	AssetPath = Path;
+	AssetPath = Data.AssetPath;
 
 	if (Name)
-		if (AlternativeName.IsEmpty())
-			Name->SetText(FText::FromString(FPackageName::GetShortName(*Path)));
+		if (Data.AlternativeName.IsEmpty())
+			Name->SetText(FText::FromString(FPackageName::GetShortName(*Data.AssetPath)));
 		else
-			Name->SetText(FText::FromString(AlternativeName));
+			Name->SetText(FText::FromString(Data.AlternativeName));
 	
-	Background->Path = Path;
+	Background->Path = Data.AssetPath;
 
-	PathType = Type;
+	PathType = Data.PathType;
 }
 
-void UPinnedAssetSlotBase::SetThumbnail(UTexture2D* ThumbnailTexture)
+void UPinnedAssetSlotBase::SetThumbnail(const FAssetData& AssetData, const UPinnedAssetSubsystem* PinnedAssetSubsystem)
 {
-	Thumbnail->SetBrushFromTexture(ThumbnailTexture);
+	USizeBoxSlot* SlotPtr = nullptr;
+
+	if (PathType == EPathType::Folder)
+	{
+		UImage* Image = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass(), TEXT("Thumbnail"));
+		Image->SetBrushFromTexture(PinnedAssetSubsystem->FolderIcon);
+		SlotPtr = Cast<USizeBoxSlot>(ThumbnailHolder->AddChild(Image));
+	}
+	else if (PathType == EPathType::Asset)
+	{
+		Thumbnail = WidgetTree->ConstructWidget<UAssetThumbnailWidget>(UAssetThumbnailWidget::StaticClass(), TEXT("Thumbnail"));
+		Thumbnail->SetAsset(AssetData);
+		SlotPtr = Cast<USizeBoxSlot>(ThumbnailHolder->AddChild(Thumbnail));
+	}
+
+	if (SlotPtr)
+	{
+		SlotPtr->SetHorizontalAlignment(EHorizontalAlignment::HAlign_Fill);
+		SlotPtr->SetVerticalAlignment(EVerticalAlignment::VAlign_Fill);
+	}
 }
 
 
@@ -41,6 +63,9 @@ void UPinnedAssetSlotBase::SetSize(int Width, int Height)
 {
 	SizeBox->SetHeightOverride(Height);
 	SizeBox->SetWidthOverride(Width);
+
+	if (Thumbnail)
+		Thumbnail->SetResolution(FIntPoint(Width));
 }
 
 FReply UPinnedAssetSlotBase::NativeOnMouseButtonDoubleClick(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)

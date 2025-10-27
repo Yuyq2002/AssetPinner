@@ -12,6 +12,9 @@
 #include "IImageWrapperModule.h" 
 #include <ObjectTools.h>
 #include <ImageUtils.h>
+#include "Components/WidgetSwitcher.h"
+#include "Tab.h"
+#include "Components/HorizontalBox.h"
 
 void UPinnedSectionBase::NativeConstruct()
 {
@@ -34,6 +37,21 @@ void UPinnedSectionBase::NativeConstruct()
 		Size = FCString::Atof(*Data);
 	}
 
+	if (TabList)
+	{
+		UTab* PinnedTab = CreateWidget<UTab>(this, TabWidget);
+		PinnedTab->SetInfo("Pinned", this, 0);
+		PinnedTab->OnTabClickedDelegate.BindDynamic(this, &UPinnedSectionBase::OnTabClicked);
+		ActiveTab = PinnedTab;
+		ActiveTab->SetSelected(true);
+		UTab* HistoryTab = CreateWidget<UTab>(this, TabWidget);
+		HistoryTab->OnTabClickedDelegate.BindDynamic(this, &UPinnedSectionBase::OnTabClicked);
+		HistoryTab->SetInfo("History", this, 1);
+
+		TabList->AddChild(PinnedTab);
+		TabList->AddChild(HistoryTab);
+	}
+
 	Refresh(PinnedAssetSubsystem->GetAssetDataList());
 
 	ClearButton->OnClicked.AddDynamic(this, &UPinnedSectionBase::OnClearButtonClicked);
@@ -54,6 +72,11 @@ void UPinnedSectionBase::AddRecheck(UPinnedAssetSlotBase* Caller, FKey Input)
 {
 	RecallEditAction = Caller;
 	MouseInput = Input;
+}
+
+void UPinnedSectionBase::SwitchTab(int Index)
+{
+	TabController->SetActiveWidgetIndex(Index);
 }
 
 void UPinnedSectionBase::OnListChangedCallback(const TArray<FPinnedAssetData>& List)
@@ -80,12 +103,9 @@ void UPinnedSectionBase::Refresh(const TArray<FPinnedAssetData>& List)
 			continue;
 
 		UPinnedAssetSlotBase* NewSlot = CreateWidget<UPinnedAssetSlotBase>(this, AssetSlotWidget);
-		NewSlot->SetAssetData(Data.AssetPath, Data.PathType, Data.AlternativeName);
+		NewSlot->SetAssetData(Data);
+		NewSlot->SetThumbnail(Assets.IsValidIndex(0) ? Assets[0] : nullptr, PinnedAssetSubsystem);
 		NewSlot->SetSize(Size, Size * Ratio);
-		if (Data.PathType == EPathType::Asset)
-			NewSlot->SetThumbnail(GetObjectThumbnailAsTexture2D(Assets[0]));
-		else
-			NewSlot->SetThumbnail(PinnedAssetSubsystem->FolderIcon);
 		Slots.Add(NewSlot);
 
 		if (Data.PinnedStatus)
@@ -95,6 +115,13 @@ void UPinnedSectionBase::Refresh(const TArray<FPinnedAssetData>& List)
 	}
 
 	return;
+}
+
+void UPinnedSectionBase::OnTabClicked(UTab* Initiator)
+{
+	ActiveTab->SetSelected();
+	ActiveTab = Initiator;
+	SwitchTab(ActiveTab->SetSelected(true));
 }
 
 void UPinnedSectionBase::OnClearButtonClicked()
@@ -158,33 +185,34 @@ void UPinnedSectionBase::NativeOnFocusLost(const FFocusEvent& InFocusEvent)
 	RecallEditAction = nullptr;
 }
 
-UTexture2D* UPinnedSectionBase::GetObjectThumbnailAsTexture2D(const FAssetData& AssetData)
-{
-	UTexture2D* CreatedTexture = nullptr;
-
-	FString PackageFilename;
-	const FName ObjectFullName = FName(*AssetData.GetFullName());
-	TSet<FName> ObjectFullNames;
-	ObjectFullNames.Add(ObjectFullName);
-	if (FPackageName::DoesPackageExist(AssetData.PackageName.ToString(), &PackageFilename))
-	{
-		FThumbnailMap ThumbnailMap;
-		ThumbnailTools::LoadThumbnailsFromPackage(PackageFilename, ObjectFullNames,
-			ThumbnailMap);
-		const FObjectThumbnail* Test = ThumbnailTools::GetThumbnailForObject(AssetData.GetAsset());
-
-		FObjectThumbnail* objTN = ThumbnailMap.Find(ObjectFullName);
-
-		IImageWrapperModule& ImageWrapperModule = FModuleManager::Get().LoadModuleChecked<IImageWrapperModule>(TEXT("ImageWrapper"));
-		TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(EImageFormat::PNG);
-
-		ImageWrapper->SetRaw(objTN->GetUncompressedImageData().GetData(), objTN->GetUncompressedImageData().Num(), objTN->GetImageWidth(), objTN->GetImageHeight(), ERGBFormat::BGRA, 8);
-		const TArray64<uint8>& CompressedByteArray = ImageWrapper->GetCompressed();
-
-		CreatedTexture = FImageUtils::ImportBufferAsTexture2D(CompressedByteArray);
-
-		return CreatedTexture;
-	}
-	else
-		return nullptr;
-}
+// Old code to get the thumbnail of an asset
+//UTexture2D* UPinnedSectionBase::GetObjectThumbnailAsTexture2D(const FAssetData& AssetData)
+//{
+//	UTexture2D* CreatedTexture = nullptr;
+//
+//	FString PackageFilename;
+//	const FName ObjectFullName = FName(*AssetData.GetFullName());
+//	TSet<FName> ObjectFullNames;
+//	ObjectFullNames.Add(ObjectFullName);
+//	if (FPackageName::DoesPackageExist(AssetData.PackageName.ToString(), &PackageFilename))
+//	{
+//		FThumbnailMap ThumbnailMap;
+//		ThumbnailTools::LoadThumbnailsFromPackage(PackageFilename, ObjectFullNames,
+//			ThumbnailMap);
+//		const FObjectThumbnail* Test = ThumbnailTools::GetThumbnailForObject(AssetData.GetAsset());
+//
+//		FObjectThumbnail* objTN = ThumbnailMap.Find(ObjectFullName);
+//
+//		IImageWrapperModule& ImageWrapperModule = FModuleManager::Get().LoadModuleChecked<IImageWrapperModule>(TEXT("ImageWrapper"));
+//		TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(EImageFormat::PNG);
+//
+//		ImageWrapper->SetRaw(objTN->GetUncompressedImageData().GetData(), objTN->GetUncompressedImageData().Num(), objTN->GetImageWidth(), objTN->GetImageHeight(), ERGBFormat::BGRA, 8);
+//		const TArray64<uint8>& CompressedByteArray = ImageWrapper->GetCompressed();
+//
+//		CreatedTexture = FImageUtils::ImportBufferAsTexture2D(CompressedByteArray);
+//
+//		return CreatedTexture;
+//	}
+//	else
+//		return nullptr;
+//}

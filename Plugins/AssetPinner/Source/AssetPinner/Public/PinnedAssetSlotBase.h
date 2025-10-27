@@ -15,6 +15,8 @@
 class UTextBlock;
 class UAssetThumbnailWidget;
 class UPinnedSectionBase;
+struct FPinnedAssetData;
+class UPinnedAssetSubsystem;
 /**
  * 
  */
@@ -28,8 +30,8 @@ class ASSETPINNER_API UPinnedAssetSlotBase : public UEditorUtilityWidget
 	EPathType PathType;
 
 public:
-	void SetAssetData(const FString& Path, EPathType Type, const FString& AlternativeName);
-	void SetThumbnail(UTexture2D* ThumbnailTexture);
+	void SetAssetData(const FPinnedAssetData& Data);
+	void SetThumbnail(const FAssetData& AssetData, const UPinnedAssetSubsystem* PinnedAssetSubsystem);
 	FString GetAssetPath();
 	void SetSize(int Width, int Height);
 
@@ -44,7 +46,10 @@ private:
 	UTextBlock* Name;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
-	UImage* Thumbnail;
+	USizeBox* ThumbnailHolder;
+
+	UPROPERTY()
+	UAssetThumbnailWidget* Thumbnail;
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
 	FLinearColor BaseColor;

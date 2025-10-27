@@ -13,6 +13,9 @@ class UPinnedAssetSlotBase;
 class USizeBox;
 class UScrollBox;
 class UPinnedAssetSubsystem;
+class UWidgetSwitcher;
+class UHorizontalBox;
+class UTab;
 struct FPinnedAssetData;
 
 enum class EditState
@@ -31,15 +34,20 @@ class ASSETPINNER_API UPinnedSectionBase : public UEditorUtilityWidget
 	GENERATED_BODY()
 	
 public:
-	virtual void NativeConstruct();
-	virtual void NativeDestruct();
+	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 	EditState CheckInEditMode();
 	void AddRecheck(UPinnedAssetSlotBase* Caller, FKey Input);
+
+	UFUNCTION()
+	void SwitchTab(int Index);
 
 private:
 	UFUNCTION()
 	void OnListChangedCallback(const TArray<FPinnedAssetData>& List);
 	void Refresh(const TArray<FPinnedAssetData>& List);
+	UFUNCTION()
+	void OnTabClicked(UTab* Initiator);
 
 	UFUNCTION()
 	void OnClearButtonClicked();
@@ -50,13 +58,20 @@ private:
 	virtual FReply NativeOnFocusReceived(const FGeometry& InGeometry, const FFocusEvent& InFocusEvent) override;
 	virtual void NativeOnFocusLost(const FFocusEvent& InFocusEvent) override;
 
-	UTexture2D* GetObjectThumbnailAsTexture2D(const FAssetData& AssetData);
-
 private:
 	EditState EditMode;
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
 	TSubclassOf<UEditorUtilityWidget> AssetSlotWidget;
+
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
+	TSubclassOf<UEditorUtilityWidget> TabWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
+	UWidgetSwitcher* TabController;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
+	UHorizontalBox* TabList;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
 	UScrollBox* PinnedScrollBox;
@@ -89,4 +104,7 @@ private:
 
 	UPROPERTY()
 	UPinnedAssetSubsystem* PinnedAssetSubsystem;
+
+	UPROPERTY()
+	UTab* ActiveTab;
 };

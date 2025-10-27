@@ -173,7 +173,7 @@ void UPinnedAssetSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
-	FolderIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Script/Engine.Texture2D'/AssetPinner/Folder_Base_256x.Folder_Base_256x'"));
+	FolderIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Script/Engine.Texture2D'/AssetPinner/Icon/Folder_Base_256x.Folder_Base_256x'"));
 	FilePath = FPaths::GameUserDeveloperDir() + "PinnedAssetData.txt";
 	TArray<FString> LoadList;
 	FFileHelper::LoadFileToStringArray(LoadList, *FilePath);
