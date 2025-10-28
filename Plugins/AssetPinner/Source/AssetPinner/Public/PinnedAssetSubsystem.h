@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "EditorSubsystem.h"
-#include "PinnedAssetData.h"
+#include "Structs.h"
 #include "PinnedAssetSubsystem.generated.h"
 
 /**

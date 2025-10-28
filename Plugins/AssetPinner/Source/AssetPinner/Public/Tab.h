@@ -8,29 +8,42 @@
 
 class UBorder;
 class UTextBlock;
-class UPinnedSectionBase;
+class UEditorUtilityEditableTextBox;
+class UPinnedWindowBase;
 
 /**
  * 
  */
+
 UCLASS()
 class ASSETPINNER_API UTab : public UEditorUtilityWidget
 {
 	GENERATED_BODY()
 
 	DECLARE_DYNAMIC_DELEGATE_OneParam(FOnTabClickedSignature, UTab*, Initiator);
+	DECLARE_DYNAMIC_DELEGATE_ThreeParams(FOnNameChangedSignature, UTab*, Initiator, FText, OldName, FText, NewName);
 	
 public:
-	void SetInfo(FString Name, UPinnedSectionBase* InParent, int InTabIndex);
+	virtual void NativeConstruct() override;
+	void SetInfo(FText InName, UPinnedWindowBase* InParent, int InTabIndex);
+	void SetInfo(UPinnedWindowBase* InParent, int InTabIndex);
+	void SetInfo(FText InName);
+	void EditName(bool EnableEditing);
 	int SetSelected(bool IsSelected = false);
 
 	UPROPERTY()
 	FOnTabClickedSignature OnTabClickedDelegate;
 
+	UPROPERTY()
+	FOnNameChangedSignature OnNameChangedDelegate;
+
 private:
 	virtual FReply NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) override;
+
+	UFUNCTION()
+	void OnNameChanged(const FText& InText, ETextCommit::Type CommitMethod);
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
@@ -38,6 +51,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
 	UTextBlock* Text;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
+	UEditorUtilityEditableTextBox* RenameTextBox;
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
 	FLinearColor BaseColor;
@@ -52,5 +68,5 @@ private:
 	bool bIsSelected;
 
 	UPROPERTY()
-	UPinnedSectionBase* Parent;
+	UPinnedWindowBase* Parent;
 };

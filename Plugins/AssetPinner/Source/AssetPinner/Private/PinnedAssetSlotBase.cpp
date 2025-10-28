@@ -5,12 +5,12 @@
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
 #include "AssetRegistry/AssetRegistryModule.h"
-#include "PinnedSectionBase.h"
+#include "PinnedWindowBase.h"
 #include "PinnedAssetSubsystem.h"
 #include "Components\AssetThumbnailWidget.h"
 #include <ContentBrowserModule.h>
 #include "IContentBrowserSingleton.h"
-#include "PinnedAssetData.h"
+#include "Structs.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/SizeBoxSlot.h"
 

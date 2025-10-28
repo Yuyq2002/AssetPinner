@@ -2,17 +2,56 @@
 
 
 #include "Tab.h"
-#include "PinnedSectionBase.h"
+#include "PinnedWindowBase.h"
 #include "Components/Border.h"
 #include "Components/TextBlock.h"
+#include "EditorUtilityWidgetComponents.h"
 
-void UTab::SetInfo(FString Name, UPinnedSectionBase* InParent, int InTabIndex)
+void UTab::NativeConstruct()
+{
+	RenameTextBox->OnTextCommitted.AddDynamic(this, &UTab::OnNameChanged);
+}
+
+void UTab::SetInfo(FText InName, UPinnedWindowBase* InParent, int InTabIndex)
 {
 	Parent = InParent;
 	Index = InTabIndex;
 
-	if(Text)
-		Text->SetText(FText::FromString(Name));
+	if (Text)
+		Text->SetText(InName);
+
+	if (RenameTextBox)
+		RenameTextBox->SetText(InName);
+}
+
+void UTab::SetInfo(UPinnedWindowBase* InParent, int InTabIndex)
+{
+	Parent = InParent;
+	Index = InTabIndex;
+}
+
+void UTab::SetInfo(FText InName)
+{
+	if (Text)
+		Text->SetText(InName);
+
+	if (RenameTextBox)
+		RenameTextBox->SetText(InName);
+}
+
+void UTab::EditName(bool EnableEditing)
+{
+	if(EnableEditing)
+	{ 
+		RenameTextBox->SetVisibility(ESlateVisibility::Visible);
+		RenameTextBox->SetKeyboardFocus();
+		Text->SetVisibility(ESlateVisibility::Hidden);
+	}
+	else
+	{
+		RenameTextBox->SetVisibility(ESlateVisibility::Hidden);
+		Text->SetVisibility(ESlateVisibility::Visible);
+	}
 }
 
 int UTab::SetSelected(bool IsSelected)
@@ -30,8 +69,6 @@ int UTab::SetSelected(bool IsSelected)
 		return -1;
 	}
 }
-
-
 
 FReply UTab::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
@@ -55,3 +92,9 @@ void UTab::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
 		Background->SetBrushColor(BaseColor);
 }
 
+void UTab::OnNameChanged(const FText& InText, ETextCommit::Type CommitMethod)
+{
+	OnNameChangedDelegate.ExecuteIfBound(this, Text->GetText(), InText);
+
+	EditName(false);
+}

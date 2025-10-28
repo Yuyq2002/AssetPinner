@@ -4,7 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Enums.h"
-#include "PinnedAssetData.generated.h"
+#include "Structs.generated.h"
+
+class UPinnedSectionBase;
+
 /**
  * 
  */
@@ -33,4 +36,23 @@ struct ASSETPINNER_API FPinnedAssetData
 	FString AlternativeName;
 	bool PinnedStatus;
 	EPathType PathType;
+};
+
+USTRUCT()
+struct FSection
+{
+	GENERATED_BODY()
+
+	FString Name;
+
+	UPROPERTY()
+	UPinnedSectionBase* SectionWidget;
+
+	FSection() = default;
+
+	FSection(FString InName, UPinnedSectionBase* InSectionWidget)
+	{
+		Name = InName;
+		SectionWidget = InSectionWidget;
+	}
 };
