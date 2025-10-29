@@ -10,12 +10,14 @@
 void UTab::NativeConstruct()
 {
 	RenameTextBox->OnTextCommitted.AddDynamic(this, &UTab::OnNameChanged);
+
+	RemoveButton->OnClicked.AddDynamic(this, &UTab::OnRemoveClicked);
 }
 
-void UTab::SetInfo(FText InName, UPinnedWindowBase* InParent, int InTabIndex)
+void UTab::SetInfo(FText InName, UPinnedWindowBase* InParent, UWidget* InWidget)
 {
 	Parent = InParent;
-	Index = InTabIndex;
+	Widget = InWidget;
 
 	if (Text)
 		Text->SetText(InName);
@@ -24,10 +26,10 @@ void UTab::SetInfo(FText InName, UPinnedWindowBase* InParent, int InTabIndex)
 		RenameTextBox->SetText(InName);
 }
 
-void UTab::SetInfo(UPinnedWindowBase* InParent, int InTabIndex)
+void UTab::SetInfo(UPinnedWindowBase* InParent, UWidget* InWidget)
 {
 	Parent = InParent;
-	Index = InTabIndex;
+	Widget = InWidget;
 }
 
 void UTab::SetInfo(FText InName)
@@ -54,21 +56,32 @@ void UTab::EditName(bool EnableEditing)
 	}
 }
 
-int UTab::SetSelected(bool IsSelected)
+UWidget* UTab::SetSelected(bool IsSelected)
 {
 	bIsSelected = IsSelected;
 
 	if (bIsSelected)
 	{
 		Background->SetBrushColor(SelectedColor);
-		return Index;
+		return Widget;
 	}
 	else
 	{
 		Background->SetBrushColor(BaseColor);
-		return -1;
+		return nullptr;
 	}
 }
+
+UWidget* UTab::GetSection()
+{
+	return Widget;
+}
+
+FString UTab::GetName()
+{
+	return Text->GetText().ToString();
+}
+
 
 FReply UTab::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
@@ -97,4 +110,9 @@ void UTab::OnNameChanged(const FText& InText, ETextCommit::Type CommitMethod)
 	OnNameChangedDelegate.ExecuteIfBound(this, Text->GetText(), InText);
 
 	EditName(false);
+}
+
+void UTab::OnRemoveClicked()
+{
+	OnRemoveClickedDelegate.ExecuteIfBound(this);
 }

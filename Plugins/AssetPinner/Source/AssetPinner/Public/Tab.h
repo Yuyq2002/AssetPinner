@@ -10,6 +10,7 @@ class UBorder;
 class UTextBlock;
 class UEditorUtilityEditableTextBox;
 class UPinnedWindowBase;
+class UEditorUtilityButton;
 
 /**
  * 
@@ -21,21 +22,27 @@ class ASSETPINNER_API UTab : public UEditorUtilityWidget
 	GENERATED_BODY()
 
 	DECLARE_DYNAMIC_DELEGATE_OneParam(FOnTabClickedSignature, UTab*, Initiator);
+	DECLARE_DYNAMIC_DELEGATE_OneParam(FOnRemoveClickedSignature, UTab*, Initiator);
 	DECLARE_DYNAMIC_DELEGATE_ThreeParams(FOnNameChangedSignature, UTab*, Initiator, FText, OldName, FText, NewName);
 	
 public:
 	virtual void NativeConstruct() override;
-	void SetInfo(FText InName, UPinnedWindowBase* InParent, int InTabIndex);
-	void SetInfo(UPinnedWindowBase* InParent, int InTabIndex);
+	void SetInfo(FText InName, UPinnedWindowBase* InParent, UWidget* InWidget);
+	void SetInfo(UPinnedWindowBase* InParent, UWidget* InWidget);
 	void SetInfo(FText InName);
 	void EditName(bool EnableEditing);
-	int SetSelected(bool IsSelected = false);
+	UWidget* SetSelected(bool IsSelected = false);
+	UWidget* GetSection();
+	FString GetName();
 
 	UPROPERTY()
 	FOnTabClickedSignature OnTabClickedDelegate;
 
 	UPROPERTY()
 	FOnNameChangedSignature OnNameChangedDelegate;
+
+	UPROPERTY()
+	FOnRemoveClickedSignature OnRemoveClickedDelegate;
 
 private:
 	virtual FReply NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
@@ -44,6 +51,9 @@ private:
 
 	UFUNCTION()
 	void OnNameChanged(const FText& InText, ETextCommit::Type CommitMethod);
+
+	UFUNCTION()
+	void OnRemoveClicked();
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
@@ -55,6 +65,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
 	UEditorUtilityEditableTextBox* RenameTextBox;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
+	UEditorUtilityButton* RemoveButton;
+
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
 	FLinearColor BaseColor;
 
@@ -64,7 +77,8 @@ private:
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
 	FLinearColor SelectedColor;
 
-	int Index;
+	UPROPERTY()
+	UWidget* Widget;
 	bool bIsSelected;
 
 	UPROPERTY()

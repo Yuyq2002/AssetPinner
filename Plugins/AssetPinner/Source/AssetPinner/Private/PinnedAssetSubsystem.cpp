@@ -87,7 +87,13 @@ void UPinnedAssetSubsystem::MoveAssetPath(FString Path)
 
 void UPinnedAssetSubsystem::ClearRecent()
 {
-	AssetDataList.Empty();
+	bool Status = false;
+	AssetDataList.RemoveAll(
+		[Status](FPinnedAssetData Candidate)
+		{
+			return Candidate.PinnedStatus == Status;
+		}
+	);
 
 	TArray<FString> SaveList;
 	for (const auto& Data : AssetDataList)

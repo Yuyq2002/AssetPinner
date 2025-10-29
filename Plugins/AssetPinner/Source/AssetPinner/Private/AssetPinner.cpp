@@ -49,7 +49,7 @@ void FAssetPinnerModule::RegisterMenuExtension()
         TEXT("AssetPinner"),
         FExecuteAction::CreateLambda([]()
             {
-                UObject* WidgetObj = LoadObject<UObject>(nullptr, TEXT("/AssetPinner/BPW_PinnedAssetSection"));
+                UObject* WidgetObj = LoadObject<UObject>(nullptr, TEXT("/AssetPinner/BPW_PinnedAssetWindow"));
                 UEditorUtilityWidgetBlueprint* WidgetBP = Cast<UEditorUtilityWidgetBlueprint>(WidgetObj);
 
                 if (WidgetBP)

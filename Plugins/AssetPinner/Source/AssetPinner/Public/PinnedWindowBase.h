@@ -41,7 +41,7 @@ public:
 	EditState CheckInEditMode();
 
 	UFUNCTION()
-	void SwitchTab(int Index);
+	void SwitchTab(UWidget* Widget);
 
 private:
 	UFUNCTION()
@@ -54,6 +54,9 @@ private:
 	void OnTabRenamed(UTab* Initiator, FText OldName, FText NewName);
 
 	UFUNCTION()
+	void OnTabRemoved(UTab* Initiator);
+
+	UFUNCTION(BlueprintCallable)
 	void OnClearButtonClicked();
 
 	UFUNCTION()
@@ -66,6 +69,7 @@ private:
 	virtual void NativeOnFocusLost(const FFocusEvent& InFocusEvent) override;
 
 	bool FindSection(FString Name, int& OutIndex);
+	bool ContainsSection(FString Name);
 
 private:
 	EditState EditMode;
@@ -89,13 +93,7 @@ private:
 	UPinnedSectionBase* RecentSection;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
-	UEditorUtilityButton* ClearButton;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
 	UEditorUtilityButton* NewTabButton;
-
-	UPROPERTY()
-	FKey MouseInput;
 
 	UPROPERTY()
 	TArray<UPinnedAssetSlotBase*> Slots;
@@ -113,4 +111,6 @@ private:
 
 	UPROPERTY()
 	TArray<FSection> SectionMap;
+
+	int DefaultNameIndex;
 };

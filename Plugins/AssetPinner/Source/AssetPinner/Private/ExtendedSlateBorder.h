@@ -75,6 +75,7 @@ private:
 	TWeakPtr<IMenu> ActiveMenu;
 };
 
+class UPinnedWindowBase;
 
 class SExtendedSlateBorder : public SBorder
 {
@@ -131,6 +132,8 @@ public:
 		/** Whether the context menu can be opened  */
 		SLATE_ATTRIBUTE(bool, AllowContextMenu)
 
+		SLATE_ATTRIBUTE(UPinnedWindowBase*, Window)
+
 		SLATE_ATTRIBUTE(FString, AssetPath)
 	SLATE_END_ARGS()
 
@@ -160,6 +163,9 @@ protected:
 	TWeakPtr<SWindow> ParentWidget;
 	FDeprecateSlateVector2D ContextMenuPosition;
 	FString AltNameHolder;
+
+	UPROPERTY()
+	UPinnedWindowBase* Window;
 
 	FActiveContextMenu ActiveContextMenu;
 };

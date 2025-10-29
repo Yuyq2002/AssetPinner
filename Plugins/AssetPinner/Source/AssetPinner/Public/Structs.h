@@ -48,11 +48,15 @@ struct FSection
 	UPROPERTY()
 	UPinnedSectionBase* SectionWidget;
 
+	UPROPERTY()
+	bool bIsPersistent;
+
 	FSection() = default;
 
-	FSection(FString InName, UPinnedSectionBase* InSectionWidget)
+	FSection(FString InName, UPinnedSectionBase* InSectionWidget, bool InIsPersistent = false)
 	{
 		Name = InName;
 		SectionWidget = InSectionWidget;
+		bIsPersistent = InIsPersistent;
 	}
 };
