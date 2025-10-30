@@ -25,9 +25,8 @@ public:
 
 	void AddAssetPath(FString Path, EPathType Type = EPathType::Asset, bool IsPinned = true);
 	void RemoveAssetPath(FString Path);
-	void MoveAssetPath(FString Path);
+	void MoveAssetPath(FString Path, int TabIndex);
 	void ClearRecent();
-	void RenamePinnedAsset(FString Path, FString NewName);
 
 	bool GetStatus(FString Path);
 	EPathType GetPathType(FString Path);

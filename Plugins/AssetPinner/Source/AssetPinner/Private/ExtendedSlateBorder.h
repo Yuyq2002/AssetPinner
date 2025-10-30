@@ -132,9 +132,7 @@ public:
 		/** Whether the context menu can be opened  */
 		SLATE_ATTRIBUTE(bool, AllowContextMenu)
 
-		SLATE_ATTRIBUTE(UPinnedWindowBase*, Window)
-
-		SLATE_ATTRIBUTE(FString, AssetPath)
+		SLATE_EVENT(FMenuExtensionDelegate, ContextMenuExtender)
 	SLATE_END_ARGS()
 
 	/** See the AllowContextMenu attribute */
@@ -145,27 +143,12 @@ public:
 protected:
 	virtual FReply OnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 	TSharedPtr<SWidget> BuildContextMenuContent();
-	void OnContextMenuClosed(TSharedRef<IMenu> Menu);
-	void OnRenamed(const FText& Text, ETextCommit::Type CommitType);
-
-	void Pin();
-	bool CanPin();
-	void Unpin();
-	void LocateInBrowser();
-	void SetAlternativeName();
-	void ConfirmName();
 
 protected:
 	/** Whether to disable the context menu */
 	TAttribute< bool > AllowContextMenu;
 
-	FString AssetPath;
-	TWeakPtr<SWindow> ParentWidget;
-	FDeprecateSlateVector2D ContextMenuPosition;
-	FString AltNameHolder;
-
-	UPROPERTY()
-	UPinnedWindowBase* Window;
-
 	FActiveContextMenu ActiveContextMenu;
+
+	FMenuExtensionDelegate ContextMenuExtender;
 };

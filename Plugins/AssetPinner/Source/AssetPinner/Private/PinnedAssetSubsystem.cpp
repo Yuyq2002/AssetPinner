@@ -9,7 +9,7 @@ void UPinnedAssetSubsystem::AddAssetPath(FString Path, EPathType Type, bool IsPi
 	bool SaveData = false;
 	if (!ContainsPath(Path))
 	{
-		AssetDataList.Add(FPinnedAssetData(Path, IsPinned, Type));
+		AssetDataList.Add(FPinnedAssetData(Path, !IsPinned, Type));
 
 		SaveData = true;
 
@@ -21,10 +21,10 @@ void UPinnedAssetSubsystem::AddAssetPath(FString Path, EPathType Type, bool IsPi
 		int Index = -1;
 		if (FindPath(Path, Index))
 		{
-			if (AssetDataList[Index].PinnedStatus || !IsPinned)
+			if (AssetDataList[Index].TabIndex == 0 || !IsPinned)
 				return;
 
-			AssetDataList[Index].PinnedStatus = true;
+			AssetDataList[Index].TabIndex = 0;
 
 			SaveData = true;
 
@@ -63,15 +63,15 @@ void UPinnedAssetSubsystem::RemoveAssetPath(FString Path)
 	}
 }
 
-void UPinnedAssetSubsystem::MoveAssetPath(FString Path)
+void UPinnedAssetSubsystem::MoveAssetPath(FString Path, int TabIndex)
 {
 	int Index = -1;
 	if (FindPath(Path, Index))
 	{
-		if (AssetDataList[Index].PinnedStatus)
+		if (AssetDataList[Index].TabIndex == TabIndex)
 			return;
 
-		AssetDataList[Index].PinnedStatus = true;
+		AssetDataList[Index].TabIndex = TabIndex;
 
 		TArray<FString> SaveList;
 		for (const auto& Data : AssetDataList)
@@ -87,11 +87,10 @@ void UPinnedAssetSubsystem::MoveAssetPath(FString Path)
 
 void UPinnedAssetSubsystem::ClearRecent()
 {
-	bool Status = false;
 	AssetDataList.RemoveAll(
-		[Status](FPinnedAssetData Candidate)
+		[](FPinnedAssetData Candidate)
 		{
-			return Candidate.PinnedStatus == Status;
+			return Candidate.TabIndex == 1;
 		}
 	);
 
@@ -106,30 +105,11 @@ void UPinnedAssetSubsystem::ClearRecent()
 		OnListChangedDelegate.Execute(AssetDataList);
 }
 
-void UPinnedAssetSubsystem::RenamePinnedAsset(FString Path, FString NewName)
-{
-	int Index = -1;
-	if (FindPath(Path, Index))
-	{
-		AssetDataList[Index].AlternativeName = NewName;
-
-		TArray<FString> SaveList;
-		for (const auto& Data : AssetDataList)
-		{
-			SaveList.Add(Data.GetSaveString());
-		}
-		FFileHelper::SaveStringArrayToFile(SaveList, *FilePath);
-
-		if (OnListChangedDelegate.IsBound())
-			OnListChangedDelegate.Execute(AssetDataList);
-	}
-}
-
 bool UPinnedAssetSubsystem::GetStatus(FString Path)
 {
 	int Index = -1;
 	if (FindPath(Path, Index))
-		return AssetDataList[Index].PinnedStatus;
+		return AssetDataList[Index].TabIndex != 1;
 
 	return false;
 }
@@ -191,9 +171,8 @@ void UPinnedAssetSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 		line.ParseIntoArray(SplitString, TEXT(" "));
 		AssetDataList.Add(FPinnedAssetData(
 			SplitString[0], 
-			SplitString[1] == "1", 
-			SplitString.IsValidIndex(2) ? (EPathType)FCString::Atoi(*SplitString[2]) : EPathType::Asset,
-			SplitString.IsValidIndex(3) ? SplitString[3] : ""
+			FCString::Atoi(*SplitString[1]), 
+			SplitString.IsValidIndex(2) ? (EPathType)FCString::Atoi(*SplitString[2]) : EPathType::Asset
 		));
 	}
 

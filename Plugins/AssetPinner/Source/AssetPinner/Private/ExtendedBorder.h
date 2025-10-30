@@ -9,8 +9,15 @@ class UExtendedBorder : public UBorder
 {
 	GENERATED_UCLASS_BODY()
 
+	void ExtendContextMenu(FMenuBuilder& Builder);
+
+	void Pin();
+	bool CanPin();
+	void Unpin();
+	void LocateInBrowser();
+
 public:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
-	FString Path;
+	FString AssetPath;
 };
 

@@ -19,12 +19,9 @@ void UPinnedAssetSlotBase::SetAssetData(const FPinnedAssetData& Data)
 	AssetPath = Data.AssetPath;
 
 	if (Name)
-		if (Data.AlternativeName.IsEmpty())
-			Name->SetText(FText::FromString(FPackageName::GetShortName(*Data.AssetPath)));
-		else
-			Name->SetText(FText::FromString(Data.AlternativeName));
-	
-	Background->Path = Data.AssetPath;
+		Name->SetText(FText::FromString(FPackageName::GetShortName(*Data.AssetPath)));
+
+	Background->AssetPath = Data.AssetPath;
 
 	PathType = Data.PathType;
 }

@@ -18,23 +18,17 @@ struct ASSETPINNER_API FPinnedAssetData
 
 	FPinnedAssetData() = default;
 
-	FPinnedAssetData(FString InAssetPath, bool InPinnedStatus, EPathType InPathType)
+	FPinnedAssetData(FString InAssetPath, int InTabIndex, EPathType InPathType)
 	{
 		AssetPath = InAssetPath;
-		PinnedStatus = InPinnedStatus;
+		TabIndex = InTabIndex;
 		PathType = InPathType;
 	}
 
-	FPinnedAssetData(FString InAssetPath, bool InPinnedStatus, EPathType InPathType, FString InAlternativeName) : FPinnedAssetData(InAssetPath, InPinnedStatus, InPathType)
-	{
-		AlternativeName = InAlternativeName;
-	}
-
-	FString GetSaveString() const { return AssetPath + ' ' + (PinnedStatus ? '1' : '0') + ' ' + FString::FromInt((int)PathType) + ' ' + AlternativeName; };
+	FString GetSaveString() const { return AssetPath + ' ' + FString::FromInt(TabIndex) + ' ' + FString::FromInt((int)PathType); };
 
 	FString AssetPath;
-	FString AlternativeName;
-	bool PinnedStatus;
+	int TabIndex;
 	EPathType PathType;
 };
 

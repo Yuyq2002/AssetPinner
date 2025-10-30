@@ -140,10 +140,7 @@ void UPinnedWindowBase::Refresh(const TArray<FPinnedAssetData>& List)
 		NewSlot->SetSize(Size, Size * Ratio);
 		Slots.Add(NewSlot);
 
-		if (Data.PinnedStatus)
-			PinnedSection->AddPinnedAsset(NewSlot);
-		else
-			RecentSection->AddPinnedAsset(NewSlot);
+		SectionMap[Data.TabIndex].SectionWidget->AddPinnedAsset(NewSlot);
 	}
 
 	return;
