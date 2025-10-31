@@ -5,6 +5,7 @@
 #include <ContentBrowserModule.h>
 #include "IContentBrowserSingleton.h"
 #include <AssetRegistry/AssetRegistryModule.h>
+#include "Components/ComboBox.h"
 
 UExtendedBorder::UExtendedBorder(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) 
 {
@@ -53,6 +54,14 @@ void UExtendedBorder::ExtendContextMenu(FMenuBuilder& Builder)
 			FSlateIcon(),
 			UnpinAssetAction
 		);
+
+		FMenuBuilder TabMenuBuilder(true, TSharedPtr< const FUICommandList >(), nullptr, false, &FCoreStyle::Get());
+
+		Builder.AddSubMenu(
+			NSLOCTEXT("AssetPinner", "MoveAssetLabel", "Move Asset"),
+			NSLOCTEXT("AssetPinner", "MoveAssetTooltip", "Move the asset to another tab"),
+			FNewMenuDelegate::CreateUObject(this, &UExtendedBorder::GenerateTabSubMenu)
+		);
 	}
 	Builder.EndSection();
 
@@ -75,7 +84,7 @@ void UExtendedBorder::ExtendContextMenu(FMenuBuilder& Builder)
 
 void UExtendedBorder::Pin()
 {
-	UPinnedAssetSubsystem* Subsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
+	UPinnedAssetSubsystem* Subsystem = GEngine->GetEngineSubsystem<UPinnedAssetSubsystem>();
 	if (!Subsystem)
 		return;
 
@@ -85,7 +94,7 @@ void UExtendedBorder::Pin()
 
 bool UExtendedBorder::CanPin()
 {
-	UPinnedAssetSubsystem* Subsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
+	UPinnedAssetSubsystem* Subsystem = GEngine->GetEngineSubsystem<UPinnedAssetSubsystem>();
 	if (!Subsystem)
 		return false;
 
@@ -95,7 +104,7 @@ bool UExtendedBorder::CanPin()
 
 void UExtendedBorder::Unpin()
 {
-	UPinnedAssetSubsystem* Subsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
+	UPinnedAssetSubsystem* Subsystem = GEngine->GetEngineSubsystem<UPinnedAssetSubsystem>();
 	if (!Subsystem)
 		return;
 
@@ -105,7 +114,7 @@ void UExtendedBorder::Unpin()
 
 void UExtendedBorder::LocateInBrowser()
 {
-	UPinnedAssetSubsystem* Subsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
+	UPinnedAssetSubsystem* Subsystem = GEngine->GetEngineSubsystem<UPinnedAssetSubsystem>();
 	if (!Subsystem)
 		return;
 
@@ -125,5 +134,33 @@ void UExtendedBorder::LocateInBrowser()
 			return;
 
 		ContentBrowserModule.Get().SyncBrowserToAssets(Assets);
+	}
+}
+
+void UExtendedBorder::SwitchTab(int Index)
+{
+	UPinnedAssetSubsystem* PinnedAssetSubsystem = GEngine->GetEngineSubsystem<UPinnedAssetSubsystem>();
+	if (!PinnedAssetSubsystem)
+		return;
+
+	PinnedAssetSubsystem->MoveAssetPath(AssetPath, Index);
+}
+
+void UExtendedBorder::GenerateTabSubMenu(FMenuBuilder& Builder)
+{
+	UPinnedAssetSubsystem* PinnedAssetSubsystem = GEngine->GetEngineSubsystem<UPinnedAssetSubsystem>();
+	if (!PinnedAssetSubsystem)
+		return;
+
+	TArray<FString> Names = PinnedAssetSubsystem->GetTabNames();
+
+	for (int i = 0; i < Names.Num(); i++)
+	{
+		Builder.AddMenuEntry(
+			NSLOCTEXT("AssetPinner", "SwitchTabLabel", "Move To " + Names[i]),
+			NSLOCTEXT("AssetPinner", "SwitchTabTooltip", "Move Asset To " + Names[i] + " Tab"),
+			FSlateIcon(),
+			FExecuteAction::CreateUObject(this, &UExtendedBorder::SwitchTab, i)
+		);
 	}
 }

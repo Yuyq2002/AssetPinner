@@ -27,7 +27,7 @@ class ASSETPINNER_API UTab : public UEditorUtilityWidget
 	
 public:
 	virtual void NativeConstruct() override;
-	void SetInfo(FText InName, UPinnedWindowBase* InParent, UWidget* InWidget);
+	void SetInfo(FText InName, UPinnedWindowBase* InParent, UWidget* InWidget, bool IsPersistent = false);
 	void SetInfo(UPinnedWindowBase* InParent, UWidget* InWidget);
 	void SetInfo(FText InName);
 	void EditName(bool EnableEditing);

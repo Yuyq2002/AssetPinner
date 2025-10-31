@@ -175,7 +175,7 @@ void FAssetPinnerModule::ExecutePinPath(FMenuBuilder& MenuBuilder, const TArray<
             FSlateIcon(FAppStyle::GetAppStyleSetName(), "ViewportActorPreview.Pinned"),
             FUIAction(FExecuteAction::CreateLambda([SelectedAssets]()
                 {
-                    UPinnedAssetSubsystem* Subsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
+                    UPinnedAssetSubsystem* Subsystem = GEngine->GetEngineSubsystem<UPinnedAssetSubsystem>();
                     if (Subsystem)
                         Subsystem->AddAssetPath(SelectedAssets[0], EPathType::Folder);
                 })),

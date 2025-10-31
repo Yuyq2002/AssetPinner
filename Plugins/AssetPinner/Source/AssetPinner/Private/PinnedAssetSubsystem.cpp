@@ -105,6 +105,69 @@ void UPinnedAssetSubsystem::ClearRecent()
 		OnListChangedDelegate.Execute(AssetDataList);
 }
 
+void UPinnedAssetSubsystem::SetTabs(const TArray<FSection>& InTabs)
+{
+	for (const auto& Tab : InTabs)
+	{
+		Tabs.AddUnique(Tab.Name);
+	}
+}
+
+void UPinnedAssetSubsystem::AddTabNames(FString Name)
+{
+	Tabs.AddUnique(Name);
+}
+
+void UPinnedAssetSubsystem::RemoveTab(int Index)
+{
+	if (Tabs.IsValidIndex(Index))
+		Tabs.RemoveAt(Index);
+
+	bool Modified = false;
+	for (auto& AssetData : AssetDataList)
+	{
+		if (AssetData.TabIndex == Index)
+		{
+			AssetData.TabIndex = 0;
+			Modified = true;
+		}
+		else if (AssetData.TabIndex > Index)
+		{
+			AssetData.TabIndex--;
+			Modified = true;
+		}
+	}
+
+	if (Modified)
+	{
+		TArray<FString> SaveList;
+		for (const auto& Data : AssetDataList)
+		{
+			SaveList.Add(Data.GetSaveString());
+		}
+		FFileHelper::SaveStringArrayToFile(SaveList, *FilePath);
+
+		if (OnListChangedDelegate.IsBound())
+			OnListChangedDelegate.Execute(AssetDataList);
+	}
+}
+
+void UPinnedAssetSubsystem::RenameTab(FString Name, int Index)
+{
+	if (Tabs.IsValidIndex(Index))
+		Tabs[Index] = Name;
+}
+
+void UPinnedAssetSubsystem::EmptyTabName()
+{
+	Tabs.Empty();
+}
+
+TArray<FString> UPinnedAssetSubsystem::GetTabNames()
+{
+	return Tabs;
+}
+
 bool UPinnedAssetSubsystem::GetStatus(FString Path)
 {
 	int Index = -1;

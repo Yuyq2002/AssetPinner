@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EditorSubsystem.h"
+#include "Subsystems/EngineSubsystem.h"
 #include "Structs.h"
 #include "PinnedAssetSubsystem.generated.h"
 
@@ -11,7 +11,7 @@
  * 
  */                                                  
 UCLASS()
-class ASSETPINNER_API UPinnedAssetSubsystem : public UEditorSubsystem
+class ASSETPINNER_API UPinnedAssetSubsystem : public UEngineSubsystem
 {
 	GENERATED_BODY()
 	
@@ -20,6 +20,9 @@ class ASSETPINNER_API UPinnedAssetSubsystem : public UEditorSubsystem
 	FString FilePath;
 	TArray<FPinnedAssetData> AssetDataList;
 
+	UPROPERTY()
+	TArray<FString> Tabs;
+
 public:
 	FAssetPathListChangedSignature OnListChangedDelegate;
 
@@ -27,6 +30,13 @@ public:
 	void RemoveAssetPath(FString Path);
 	void MoveAssetPath(FString Path, int TabIndex);
 	void ClearRecent();
+
+	void SetTabs(const TArray<FSection>& InTabs);
+	void AddTabNames(FString Name);
+	void RemoveTab(int Index);
+	void RenameTab(FString Name, int Index);
+	void EmptyTabName();
+	TArray<FString> GetTabNames();
 
 	bool GetStatus(FString Path);
 	EPathType GetPathType(FString Path);

@@ -15,6 +15,8 @@ class UExtendedBorder : public UBorder
 	bool CanPin();
 	void Unpin();
 	void LocateInBrowser();
+	void SwitchTab(int Index);
+	void GenerateTabSubMenu(FMenuBuilder& Builder);
 
 public:
 	virtual TSharedRef<SWidget> RebuildWidget() override;

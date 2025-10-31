@@ -25,10 +25,10 @@ void UPinnedWindowBase::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
-	if (!GEditor)
+	if (!GEngine)
 		return;
 
-	PinnedAssetSubsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
+	PinnedAssetSubsystem = GEngine->GetEngineSubsystem<UPinnedAssetSubsystem>();
 	if (!PinnedAssetSubsystem)
 		return;
 
@@ -52,35 +52,39 @@ void UPinnedWindowBase::NativeConstruct()
 	if (TabList)
 	{
 		UTab* PinnedTab = CreateWidget<UTab>(this, TabWidget);
-		PinnedTab->SetInfo(FText::FromString("Pinned"), this, PinnedSection);
+		PinnedTab->SetInfo(FText::FromString("Pinned"), this, PinnedSection, true);
 		PinnedTab->OnTabClickedDelegate.BindDynamic(this, &UPinnedWindowBase::OnTabClicked);
 		ActiveTab = PinnedTab;
 		ActiveTab->SetSelected(true);
 		UTab* HistoryTab = CreateWidget<UTab>(this, TabWidget);
 		HistoryTab->OnTabClickedDelegate.BindDynamic(this, &UPinnedWindowBase::OnTabClicked);
-		HistoryTab->SetInfo(FText::FromString("History"), this, RecentSection);
+		HistoryTab->SetInfo(FText::FromString("History"), this, RecentSection, true);
 
 		TabList->AddChild(PinnedTab);
 		TabList->AddChild(HistoryTab);
 	}
 
-	for (auto& line : Data)
+	if (PinnedSectionWidget)
 	{
-		UPinnedSectionBase* NewSection = CreateWidget<UPinnedSectionBase>(this, UPinnedSectionBase::StaticClass());
-		UWidgetSwitcherSlot* NewSlot = Cast<UWidgetSwitcherSlot>(TabController->AddChild(NewSection));
-		NewSlot->SetHorizontalAlignment(EHorizontalAlignment::HAlign_Fill);
-		NewSlot->SetVerticalAlignment(EVerticalAlignment::VAlign_Fill);
+		for (auto& line : Data)
+		{
+			UPinnedSectionBase* NewSection = CreateWidget<UPinnedSectionBase>(this, PinnedSectionWidget);
+			UWidgetSwitcherSlot* NewSlot = Cast<UWidgetSwitcherSlot>(TabController->AddChild(NewSection));
+			NewSlot->SetHorizontalAlignment(EHorizontalAlignment::HAlign_Fill);
+			NewSlot->SetVerticalAlignment(EVerticalAlignment::VAlign_Fill);
 
-		SectionMap.Add(FSection(line, NewSection));
+			SectionMap.Add(FSection(line, NewSection));
 
-		UTab* NewTab = CreateWidget<UTab>(this, TabWidget);
-		NewTab->OnTabClickedDelegate.BindDynamic(this, &UPinnedWindowBase::OnTabClicked);
-		NewTab->OnNameChangedDelegate.BindDynamic(this, &UPinnedWindowBase::OnTabRenamed);
-		NewTab->OnRemoveClickedDelegate.BindDynamic(this, &UPinnedWindowBase::OnTabRemoved);
-		NewTab->SetInfo(FText::FromString(line), this, NewSection);
+			UTab* NewTab = CreateWidget<UTab>(this, TabWidget);
+			NewTab->OnTabClickedDelegate.BindDynamic(this, &UPinnedWindowBase::OnTabClicked);
+			NewTab->OnNameChangedDelegate.BindDynamic(this, &UPinnedWindowBase::OnTabRenamed);
+			NewTab->OnRemoveClickedDelegate.BindDynamic(this, &UPinnedWindowBase::OnTabRemoved);
+			NewTab->SetInfo(FText::FromString(line), this, NewSection);
 
-		TabList->AddChild(NewTab);
+			TabList->AddChild(NewTab);
+		}
 	}
+	PinnedAssetSubsystem->SetTabs(SectionMap);
 
 	Refresh(PinnedAssetSubsystem->GetAssetDataList());
 
@@ -98,6 +102,8 @@ void UPinnedWindowBase::NativeDestruct()
 			SaveConfig += Section.Name + '\n';
 
 	FFileHelper::SaveStringToFile(SaveConfig, *ConfigPath);
+
+	PinnedAssetSubsystem->EmptyTabName();
 }
 
 EditState UPinnedWindowBase::CheckInEditMode()
@@ -123,9 +129,9 @@ void UPinnedWindowBase::Refresh(const TArray<FPinnedAssetData>& List)
 	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
 	IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
 
-	PinnedSection->ClearPinnedAsset();
-	RecentSection->ClearPinnedAsset();
 	Slots.Empty();
+	for (auto& Section : SectionMap)
+		Section.SectionWidget->ClearPinnedAsset();
 
 	for (const auto& Data : List)
 	{
@@ -161,6 +167,7 @@ void UPinnedWindowBase::OnTabRenamed(UTab* Initiator, FText OldName, FText NewNa
 	if (FindSection(OldName.ToString(), Index))
 	{
 		SectionMap[Index].Name = NewName.ToString();
+		PinnedAssetSubsystem->RenameTab(NewName.ToString(), Index);
 	}
 }
 
@@ -170,7 +177,10 @@ void UPinnedWindowBase::OnTabRemoved(UTab* Initiator)
 
 	int Index = -1;
 	if (FindSection(Initiator->GetName(), Index))
+	{
 		SectionMap.RemoveAt(Index);
+		PinnedAssetSubsystem->RemoveTab(Index);
+	}
 
 	TabController->RemoveChild(Section);
 	TabList->RemoveChild(Initiator);
@@ -178,10 +188,6 @@ void UPinnedWindowBase::OnTabRemoved(UTab* Initiator)
 
 void UPinnedWindowBase::OnClearButtonClicked()
 {
-	PinnedAssetSubsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
-	if (!PinnedAssetSubsystem)
-		return;
-
 	PinnedAssetSubsystem->ClearRecent();
 }
 
@@ -194,7 +200,7 @@ void UPinnedWindowBase::OnNewTabClicked()
 		NewName = "NewTab_" + FString::FromInt(DefaultNameIndex);
 	}
 
-	UPinnedSectionBase* NewSection = CreateWidget<UPinnedSectionBase>(this, UPinnedSectionBase::StaticClass());
+	UPinnedSectionBase* NewSection = CreateWidget<UPinnedSectionBase>(this, PinnedSectionWidget);
 	UWidgetSwitcherSlot* NewSlot = Cast<UWidgetSwitcherSlot>(TabController->AddChild(NewSection));
 	NewSlot->SetHorizontalAlignment(EHorizontalAlignment::HAlign_Fill);
 	NewSlot->SetVerticalAlignment(EVerticalAlignment::VAlign_Fill);
@@ -204,10 +210,12 @@ void UPinnedWindowBase::OnNewTabClicked()
 	UTab* NewTab = CreateWidget<UTab>(this, TabWidget);
 	NewTab->OnTabClickedDelegate.BindDynamic(this, &UPinnedWindowBase::OnTabClicked);
 	NewTab->OnNameChangedDelegate.BindDynamic(this, &UPinnedWindowBase::OnTabRenamed);
+	NewTab->OnRemoveClickedDelegate.BindDynamic(this, &UPinnedWindowBase::OnTabRemoved);
 	NewTab->SetInfo(FText::FromString(NewName), this, NewSection);
 	NewTab->EditName(true);
 
 	TabList->AddChild(NewTab);
+	PinnedAssetSubsystem->AddTabNames(NewName);
 
 	DefaultNameIndex++;
 }

@@ -14,7 +14,7 @@ void UTab::NativeConstruct()
 	RemoveButton->OnClicked.AddDynamic(this, &UTab::OnRemoveClicked);
 }
 
-void UTab::SetInfo(FText InName, UPinnedWindowBase* InParent, UWidget* InWidget)
+void UTab::SetInfo(FText InName, UPinnedWindowBase* InParent, UWidget* InWidget, bool IsPersistent)
 {
 	Parent = InParent;
 	Widget = InWidget;
@@ -24,6 +24,9 @@ void UTab::SetInfo(FText InName, UPinnedWindowBase* InParent, UWidget* InWidget)
 
 	if (RenameTextBox)
 		RenameTextBox->SetText(InName);
+
+	if (IsPersistent)
+		RemoveButton->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UTab::SetInfo(UPinnedWindowBase* InParent, UWidget* InWidget)
@@ -81,7 +84,6 @@ FString UTab::GetName()
 {
 	return Text->GetText().ToString();
 }
-
 
 FReply UTab::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
