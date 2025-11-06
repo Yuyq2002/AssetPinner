@@ -6,6 +6,7 @@
 #include "IContentBrowserSingleton.h"
 #include <AssetRegistry/AssetRegistryModule.h>
 #include "Components/ComboBox.h"
+#include "PinnedAssetSubsystem.h"
 
 UExtendedBorder::UExtendedBorder(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) 
 {
@@ -84,7 +85,7 @@ void UExtendedBorder::ExtendContextMenu(FMenuBuilder& Builder)
 
 void UExtendedBorder::Pin()
 {
-	UPinnedAssetSubsystem* Subsystem = GEngine->GetEngineSubsystem<UPinnedAssetSubsystem>();
+	UPinnedAssetSubsystem* Subsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
 	if (!Subsystem)
 		return;
 
@@ -94,7 +95,7 @@ void UExtendedBorder::Pin()
 
 bool UExtendedBorder::CanPin()
 {
-	UPinnedAssetSubsystem* Subsystem = GEngine->GetEngineSubsystem<UPinnedAssetSubsystem>();
+	UPinnedAssetSubsystem* Subsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
 	if (!Subsystem)
 		return false;
 
@@ -104,7 +105,7 @@ bool UExtendedBorder::CanPin()
 
 void UExtendedBorder::Unpin()
 {
-	UPinnedAssetSubsystem* Subsystem = GEngine->GetEngineSubsystem<UPinnedAssetSubsystem>();
+	UPinnedAssetSubsystem* Subsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
 	if (!Subsystem)
 		return;
 
@@ -114,7 +115,7 @@ void UExtendedBorder::Unpin()
 
 void UExtendedBorder::LocateInBrowser()
 {
-	UPinnedAssetSubsystem* Subsystem = GEngine->GetEngineSubsystem<UPinnedAssetSubsystem>();
+	UPinnedAssetSubsystem* Subsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
 	if (!Subsystem)
 		return;
 
@@ -139,7 +140,7 @@ void UExtendedBorder::LocateInBrowser()
 
 void UExtendedBorder::SwitchTab(int Index)
 {
-	UPinnedAssetSubsystem* PinnedAssetSubsystem = GEngine->GetEngineSubsystem<UPinnedAssetSubsystem>();
+	UPinnedAssetSubsystem* PinnedAssetSubsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
 	if (!PinnedAssetSubsystem)
 		return;
 
@@ -148,7 +149,7 @@ void UExtendedBorder::SwitchTab(int Index)
 
 void UExtendedBorder::GenerateTabSubMenu(FMenuBuilder& Builder)
 {
-	UPinnedAssetSubsystem* PinnedAssetSubsystem = GEngine->GetEngineSubsystem<UPinnedAssetSubsystem>();
+	UPinnedAssetSubsystem* PinnedAssetSubsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
 	if (!PinnedAssetSubsystem)
 		return;
 

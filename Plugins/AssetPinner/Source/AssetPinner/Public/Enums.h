@@ -15,3 +15,10 @@ enum class EPathType : uint8
 	Asset,
 	Folder
 };
+
+UENUM(BlueprintType)
+enum class ERotation : uint8
+{
+	Clockwise,
+	CounterClockwise,
+};

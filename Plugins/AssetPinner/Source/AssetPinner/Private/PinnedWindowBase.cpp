@@ -7,6 +7,7 @@
 #include "Components/WidgetSwitcher.h"
 #include "Components/WidgetSwitcherSlot.h"
 #include "Components/HorizontalBox.h"
+#include "Components/CanvasPanelSlot.h"
 #include "EditorUtilityWidgetComponents.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "IImageWrapper.h" 
@@ -28,7 +29,7 @@ void UPinnedWindowBase::NativeConstruct()
 	if (!GEngine)
 		return;
 
-	PinnedAssetSubsystem = GEngine->GetEngineSubsystem<UPinnedAssetSubsystem>();
+	PinnedAssetSubsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
 	if (!PinnedAssetSubsystem)
 		return;
 

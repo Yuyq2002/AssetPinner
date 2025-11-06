@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Subsystems/EngineSubsystem.h"
+#include "EditorSubsystem.h"
 #include "Structs.h"
 #include "PinnedAssetSubsystem.generated.h"
 
@@ -11,7 +11,7 @@
  * 
  */                                                  
 UCLASS()
-class ASSETPINNER_API UPinnedAssetSubsystem : public UEngineSubsystem
+class ASSETPINNER_API UPinnedAssetSubsystem : public UEditorSubsystem
 {
 	GENERATED_BODY()
 	

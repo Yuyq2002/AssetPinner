@@ -1,7 +1,6 @@
 #include "ExtendedSlateBorder.h"
 #include "HAL/PlatformApplicationMisc.h"
 #include "Framework/Commands/GenericCommands.h"
-#include "PinnedAssetSubsystem.h"
 #include "Internationalization/Text.h"
 
 void SExtendedSlateBorder::Construct(const FArguments& InArgs)

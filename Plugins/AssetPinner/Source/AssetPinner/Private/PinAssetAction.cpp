@@ -22,7 +22,7 @@ void PinAssetAction::PinAssets(const TArray<FAssetData>& SelectedAssets)
 
 		UPinnedAssetSubsystem* Subsystem = nullptr;
 		if (GEditor)
-			Subsystem = GEngine->GetEngineSubsystem<UPinnedAssetSubsystem>();
+			Subsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
 
 		if (Subsystem)
 			Subsystem->AddAssetPath(AssetPath);

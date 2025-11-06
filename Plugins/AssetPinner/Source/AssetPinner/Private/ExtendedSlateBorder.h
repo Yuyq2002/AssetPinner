@@ -3,7 +3,6 @@
 #include "CoreMinimal.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/DeclarativeSyntaxSupport.h"
-#include "PinnedAssetSubsystem.h"
 
 class FActiveContextMenu
 {

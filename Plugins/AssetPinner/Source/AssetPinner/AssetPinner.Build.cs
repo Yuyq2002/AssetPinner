@@ -47,7 +47,7 @@ public class AssetPinner : ModuleRules
                 "UMGEditor",
 				"EditorSubsystem",
                 "ToolMenus",
-                "ImageWrapper"
+                "ImageWrapper",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
