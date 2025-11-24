@@ -7,6 +7,7 @@
 #include "Widgets/Text/SlateEditableTextLayout.h"
 #include "Types/ReflectionMetadata.h"
 #include "Types/TrackedMetaData.h"
+#include <Enums.h>
 
 #if WITH_ACCESSIBILITY
 #include "Widgets/Accessibility/SlateAccessibleWidgets.h"
@@ -143,13 +144,36 @@ void SVerticalEditableText::Tick(const FGeometry& AllottedGeometry, const double
 
 int32 SVerticalEditableText::OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const
 {
+	const FVector2D LocalSize = AllottedGeometry.GetLocalSize();
+	const FVector2D DesiredHorizontalTextSize = EditableTextLayout->GetSize();
+	const FVector2D ActualHorizontalTextSize(FMath::Min(DesiredHorizontalTextSize.X, LocalSize.Y), FMath::Min(DesiredHorizontalTextSize.Y, LocalSize.X));
+
+	// Now determine the center of the vertical text by rotating the dimensions of the horizontal text.
+	// The center should align it to the top of the widget.
+	const FVector2D VerticalTextSize(ActualHorizontalTextSize.Y, ActualHorizontalTextSize.X);
+	const FVector2D VerticalTextCenter = VerticalTextSize / 2.0f;
+
+	// Now determine where the horizontal text should be positioned so that it is centered on the vertical text:
+	//      +-+
+	//      |v|
+	//      |e|
+	// [ horizontal ]
+	//      |r|
+	//      |t|
+	//      +-+
+	const FVector2D HorizontalTextPosition = VerticalTextCenter - ActualHorizontalTextSize / 2.0f;
+
+	// Define the text's geometry using the horizontal bounds, then rotate it 90/-90 degrees into place to become vertical.
+	const FSlateRenderTransform RotationTransform(FSlateRenderTransform(FQuat2D(FMath::DegreesToRadians(Rotation.Get() == ERotation::Clockwise ? 90 : -90))));
+	const FGeometry TextGeometry = AllottedGeometry.MakeChild(ActualHorizontalTextSize, FSlateLayoutTransform(HorizontalTextPosition), RotationTransform, FVector2D(0.5f, 0.5f));
+
 	const FTextBlockStyle& EditableTextStyle = EditableTextLayout->GetTextStyle();
 	const FLinearColor ForegroundColor = EditableTextStyle.ColorAndOpacity.GetColor(InWidgetStyle);
 
 	FWidgetStyle TextWidgetStyle = FWidgetStyle(InWidgetStyle)
 		.SetForegroundColor(ForegroundColor);
 
-	LayerId = EditableTextLayout->OnPaint(Args, AllottedGeometry, MyCullingRect, OutDrawElements, LayerId, TextWidgetStyle, ShouldBeEnabled(bParentEnabled));
+	LayerId = EditableTextLayout->OnPaint(Args, TextGeometry, MyCullingRect, OutDrawElements, LayerId, TextWidgetStyle, ShouldBeEnabled(bParentEnabled));
 
 	return LayerId;
 }
@@ -163,8 +187,9 @@ void SVerticalEditableText::CacheDesiredSize(float LayoutScaleMultiplier)
 
 FVector2D SVerticalEditableText::ComputeDesiredSize(float LayoutScaleMultiplier) const
 {
-	FVector2D TextLayoutSize = EditableTextLayout->ComputeDesiredSize(LayoutScaleMultiplier);
-	TextLayoutSize.X = FMath::Max(TextLayoutSize.X, MinDesiredWidth.Get());
+	EditableTextLayout->ComputeDesiredSize(LayoutScaleMultiplier);
+	FVector2D TextLayoutSize = EditableTextLayout->GetSize();
+	TextLayoutSize = FVector2D(TextLayoutSize.Y, FMath::Max(TextLayoutSize.X, MinDesiredWidth.Get()));
 	return TextLayoutSize;
 }
 

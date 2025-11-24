@@ -1,2 +1,4 @@
-/AssetPinner/BPW_PinnedAssetSection 0
-/AssetPinner/BPW_PinnedAssetSlot 0
+/AssetPinner/BPW_PinnedAssetSection 0 1
+/AssetPinner/BPW_PinnedAssetSlot 0 1
+/AssetPinner/BPW_Tab 1 1
+/AssetPinner/BPW_PinnedAssetWindow 1 1

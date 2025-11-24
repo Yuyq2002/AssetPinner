@@ -462,7 +462,7 @@ protected:
 	TAttribute<int32> MaximumLength;
 
 	/** Allows for inserting additional widgets that extend the functionality of the text box */
-	TSharedPtr<SHorizontalBox> Box;
+	TSharedPtr<SVerticalBox> Box;
 
 	/** SomeWidget reporting */
 	TSharedPtr<class IErrorReportingWidget> ErrorReporting;

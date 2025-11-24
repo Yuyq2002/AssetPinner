@@ -5,6 +5,7 @@
 #include "PinnedWindowBase.h"
 #include "Components/Border.h"
 #include <VerticalTextBlock.h>
+#include "VerticalEditableTextBox.h"
 #include "EditorUtilityWidgetComponents.h"
 
 void UTab::NativeConstruct()

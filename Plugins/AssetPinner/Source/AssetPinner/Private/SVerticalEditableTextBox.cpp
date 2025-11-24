@@ -48,12 +48,12 @@ void SVerticalEditableTextBox::Construct(const FArguments& InArgs)
 		.ForegroundColor(this, &SVerticalEditableTextBox::DetermineForegroundColor)
 		.Padding(0.f)
 		[
-			SAssignNew(Box, SHorizontalBox)
+			SAssignNew(Box, SVerticalBox)
 
-				+ SHorizontalBox::Slot()
+				+ SVerticalBox::Slot()
 				.VAlign(VAlign_Fill)
 				.HAlign(HAlign_Fill)
-				.FillWidth(1)
+				.FillHeight(1)
 				[
 					SAssignNew(PaddingBox, SBox)
 						.Padding(this, &SVerticalEditableTextBox::DeterminePadding)
@@ -97,7 +97,7 @@ void SVerticalEditableTextBox::Construct(const FArguments& InArgs)
 	if (ErrorReporting.IsValid())
 	{
 		Box->AddSlot()
-			.AutoWidth()
+			.AutoHeight()
 			.Padding(3, 0)
 			[
 				ErrorReporting->AsWidget()
@@ -165,7 +165,7 @@ void SVerticalEditableTextBox::SetError(const FString& InError)
 		// No error reporting was specified; make a default one
 		TSharedPtr<SPopupErrorText> ErrorTextWidget;
 		Box->AddSlot()
-			.AutoWidth()
+			.AutoHeight()
 			.Padding(3, 0)
 			[
 				SAssignNew(ErrorTextWidget, SPopupErrorText)

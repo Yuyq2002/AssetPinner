@@ -8,7 +8,7 @@
 
 class UBorder;
 class UVerticalTextBlock;
-class UEditorUtilityEditableTextBox;
+class UVerticalEditableTextBox;
 class UPinnedWindowBase;
 class UEditorUtilityButton;
 
@@ -63,7 +63,7 @@ private:
 	UVerticalTextBlock* Text;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
-	UEditorUtilityEditableTextBox* RenameTextBox;
+	UVerticalEditableTextBox* RenameTextBox;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
 	UEditorUtilityButton* RemoveButton;
