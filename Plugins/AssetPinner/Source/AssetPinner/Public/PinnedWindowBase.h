@@ -14,7 +14,7 @@ class USizeBox;
 class UScrollBox;
 class UPinnedAssetSubsystem;
 class UWidgetSwitcher;
-class UHorizontalBox;
+class UVerticalBox;
 class UTab;
 class UPinnedSectionBase;
 struct FPinnedAssetData;
@@ -87,7 +87,7 @@ private:
 	UWidgetSwitcher* TabController;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
-	UHorizontalBox* TabList;
+	UVerticalBox* TabList;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
 	UPinnedSectionBase* PinnedSection;

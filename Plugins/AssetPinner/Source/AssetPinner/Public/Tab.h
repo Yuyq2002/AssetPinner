@@ -7,7 +7,7 @@
 #include "Tab.generated.h"
 
 class UBorder;
-class UTextBlock;
+class UVerticalTextBlock;
 class UEditorUtilityEditableTextBox;
 class UPinnedWindowBase;
 class UEditorUtilityButton;
@@ -60,7 +60,7 @@ private:
 	UBorder* Background;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
-	UTextBlock* Text;
+	UVerticalTextBlock* Text;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
 	UEditorUtilityEditableTextBox* RenameTextBox;

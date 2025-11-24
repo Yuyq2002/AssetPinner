@@ -4,7 +4,7 @@
 #include "Tab.h"
 #include "PinnedWindowBase.h"
 #include "Components/Border.h"
-#include "Components/TextBlock.h"
+#include <VerticalTextBlock.h>
 #include "EditorUtilityWidgetComponents.h"
 
 void UTab::NativeConstruct()

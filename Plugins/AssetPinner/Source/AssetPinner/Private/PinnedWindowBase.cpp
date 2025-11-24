@@ -6,7 +6,7 @@
 // Unreal Headers
 #include "Components/WidgetSwitcher.h"
 #include "Components/WidgetSwitcherSlot.h"
-#include "Components/HorizontalBox.h"
+#include "Components/VerticalBox.h"
 #include "Components/CanvasPanelSlot.h"
 #include "EditorUtilityWidgetComponents.h"
 #include "AssetRegistry/AssetRegistryModule.h"

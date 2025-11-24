@@ -1,4 +1,5 @@
 /AssetPinner/BPW_Tab 0 1
 /AssetPinner/BPW_PinnedAssetSection 0 1
-/AssetPinner/BPW_PinnedAssetWindow 1 1
+/AssetPinner/BPW_PinnedAssetWindow 0 1
 /Game/NewFolder/NewBlueprint 1 1
+/Game/NewBlueprint 1 1
