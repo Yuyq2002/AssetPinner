@@ -189,8 +189,7 @@ FVector2D SVerticalEditableText::ComputeDesiredSize(float LayoutScaleMultiplier)
 {
 	EditableTextLayout->ComputeDesiredSize(LayoutScaleMultiplier);
 	FVector2D TextLayoutSize = EditableTextLayout->GetSize();
-	TextLayoutSize = FVector2D(TextLayoutSize.Y, FMath::Max(TextLayoutSize.X, MinDesiredWidth.Get()));
-	return TextLayoutSize;
+	return FVector2D(TextLayoutSize.Y, FMath::Max(TextLayoutSize.X, MinDesiredWidth.Get()));
 }
 
 FChildren* SVerticalEditableText::GetChildren()
