@@ -10,7 +10,6 @@
 
 UExtendedBorder::UExtendedBorder(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) 
 {
-
 }
 
 

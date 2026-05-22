@@ -85,7 +85,7 @@ void UPinnedWindowBase::NativeConstruct()
 			UTab* NewTab = CreateWidget<UTab>(this, TabWidget);
 			NewTab->OnTabClickedDelegate.BindDynamic(this, &UPinnedWindowBase::OnTabClicked);
 			NewTab->OnNameChangedDelegate.BindDynamic(this, &UPinnedWindowBase::OnTabRenamed);
-			NewTab->OnRemoveClickedDelegate.BindDynamic(this, &UPinnedWindowBase::OnTabRemoved);
+			NewTab->OnRemoveDelegate.BindDynamic(this, &UPinnedWindowBase::OnTabRemoved);
 			NewTab->SetInfo(FText::FromString(line), this, NewSection);
 
 			TabList->AddChild(NewTab);
@@ -217,9 +217,9 @@ void UPinnedWindowBase::OnNewTabClicked()
 	UTab* NewTab = CreateWidget<UTab>(this, TabWidget);
 	NewTab->OnTabClickedDelegate.BindDynamic(this, &UPinnedWindowBase::OnTabClicked);
 	NewTab->OnNameChangedDelegate.BindDynamic(this, &UPinnedWindowBase::OnTabRenamed);
-	NewTab->OnRemoveClickedDelegate.BindDynamic(this, &UPinnedWindowBase::OnTabRemoved);
+	NewTab->OnRemoveDelegate.BindDynamic(this, &UPinnedWindowBase::OnTabRemoved);
 	NewTab->SetInfo(FText::FromString(NewName), this, NewSection);
-	NewTab->EditName(true);
+	NewTab->InitInRenameMode();
 
 	TabList->AddChild(NewTab);
 	PinnedAssetSubsystem->AddTabNames(NewName);

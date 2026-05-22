@@ -4,76 +4,6 @@
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/DeclarativeSyntaxSupport.h"
 
-class FActiveContextMenu
-{
-public:
-	FActiveContextMenu()
-		: bIsPendingSummon(false)
-		, ActiveMenu()
-	{
-	}
-
-	/** Check to see whether this context is valid (either pending or active) */
-	bool IsValid() const
-	{
-		return bIsPendingSummon || ActiveMenu.IsValid();
-	}
-
-	/** Called to reset the active context menu state */
-	void Reset()
-	{
-		bIsPendingSummon = false;
-		ActiveMenu.Reset();
-	}
-
-	/** Called before you summon your context menu */
-	void PrepareToSummon()
-	{
-		bIsPendingSummon = true;
-		ActiveMenu.Reset();
-	}
-
-	/** Called when you've successfully summoned your context menu */
-	void SummonSucceeded(const TSharedRef<IMenu>& InMenu)
-	{
-		bIsPendingSummon = false;
-		ActiveMenu = InMenu;
-	}
-
-	/** Called if your context menu summon fails */
-	void SummonFailed()
-	{
-		bIsPendingSummon = false;
-		ActiveMenu.Reset();
-	}
-
-	/** Called to dismiss the active context menu */
-	void Dismiss()
-	{
-		if (ActiveMenu.IsValid())
-		{
-			auto ActiveMenuPin = ActiveMenu.Pin();
-			ActiveMenuPin->Dismiss();
-		}
-		Reset();
-	}
-
-	TSharedPtr<IMenu> GetActiveMenu()
-	{
-		if(ActiveMenu.IsValid())
-			return ActiveMenu.Pin();
-
-		return TSharedPtr<IMenu>();
-	}
-
-private:
-	/** True if we are pending the summon of a context menu, but don't yet have an active window pointer */
-	bool bIsPendingSummon;
-
-	/** Handle to the active context menu (if any) */
-	TWeakPtr<IMenu> ActiveMenu;
-};
-
 class UPinnedWindowBase;
 
 class SExtendedSlateBorder : public SBorder
@@ -146,8 +76,6 @@ protected:
 protected:
 	/** Whether to disable the context menu */
 	TAttribute< bool > AllowContextMenu;
-
-	FActiveContextMenu ActiveContextMenu;
 
 	FMenuExtensionDelegate ContextMenuExtender;
 };

@@ -3,7 +3,7 @@
 
 #include "Tab.h"
 #include "PinnedWindowBase.h"
-#include "Components/Border.h"
+#include "TabBorder.h"
 #include <VerticalTextBlock.h>
 #include "VerticalEditableTextBox.h"
 #include "EditorUtilityWidgetComponents.h"
@@ -12,10 +12,18 @@ void UTab::NativeConstruct()
 {
 	RenameTextBox->OnTextCommitted.AddDynamic(this, &UTab::OnNameChanged);
 
-	RemoveButton->OnClicked.AddDynamic(this, &UTab::OnRemoveClicked);
+	if (Background)
+	{
+		Background->CheckCanRenameDelegate.BindDynamic(this, &UTab::GetIsPersistent);
+		Background->OnRenameClickedDelegate.BindDynamic(this, &UTab::ActivateRenameBox);
+		Background->OnRemoveClickedDelegate.BindDynamic(this, &UTab::OnRemoveClicked);
+	}
+
+	if(bInitInRenameMode)
+		ActivateRenameBox();
 }
 
-void UTab::SetInfo(FText InName, UPinnedWindowBase* InParent, UWidget* InWidget, bool IsPersistent)
+void UTab::SetInfo(FText InName, UPinnedWindowBase* InParent, UWidget* InWidget, bool InIsPersistent)
 {
 	Parent = InParent;
 	Widget = InWidget;
@@ -26,8 +34,7 @@ void UTab::SetInfo(FText InName, UPinnedWindowBase* InParent, UWidget* InWidget,
 	if (RenameTextBox)
 		RenameTextBox->SetText(InName);
 
-	if (IsPersistent)
-		RemoveButton->SetVisibility(ESlateVisibility::Hidden);
+	bIsPersistent = InIsPersistent;
 }
 
 void UTab::SetInfo(UPinnedWindowBase* InParent, UWidget* InWidget)
@@ -51,13 +58,18 @@ void UTab::EditName(bool EnableEditing)
 	{ 
 		RenameTextBox->SetVisibility(ESlateVisibility::Visible);
 		RenameTextBox->SetKeyboardFocus();
-		Text->SetVisibility(ESlateVisibility::Hidden);
+		Text->SetVisibility(ESlateVisibility::Collapsed);
 	}
 	else
 	{
-		RenameTextBox->SetVisibility(ESlateVisibility::Hidden);
+		RenameTextBox->SetVisibility(ESlateVisibility::Collapsed);
 		Text->SetVisibility(ESlateVisibility::Visible);
 	}
+}
+
+void UTab::ActivateRenameBox()
+{
+	EditName(true);
 }
 
 UWidget* UTab::SetSelected(bool IsSelected)
@@ -117,5 +129,5 @@ void UTab::OnNameChanged(const FText& InText, ETextCommit::Type CommitMethod)
 
 void UTab::OnRemoveClicked()
 {
-	OnRemoveClickedDelegate.ExecuteIfBound(this);
+	OnRemoveDelegate.ExecuteIfBound(this);
 }

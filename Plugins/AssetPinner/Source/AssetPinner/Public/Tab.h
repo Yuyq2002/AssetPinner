@@ -6,7 +6,7 @@
 #include "EditorUtilityWidget.h"
 #include "Tab.generated.h"
 
-class UBorder;
+class UTabBorder;
 class UVerticalTextBlock;
 class UVerticalEditableTextBox;
 class UPinnedWindowBase;
@@ -22,18 +22,24 @@ class ASSETPINNER_API UTab : public UEditorUtilityWidget
 	GENERATED_BODY()
 
 	DECLARE_DYNAMIC_DELEGATE_OneParam(FOnTabClickedSignature, UTab*, Initiator);
-	DECLARE_DYNAMIC_DELEGATE_OneParam(FOnRemoveClickedSignature, UTab*, Initiator);
+	DECLARE_DYNAMIC_DELEGATE_OneParam(FOnRemoveSignature, UTab*, Initiator);
 	DECLARE_DYNAMIC_DELEGATE_ThreeParams(FOnNameChangedSignature, UTab*, Initiator, FText, OldName, FText, NewName);
 	
 public:
 	virtual void NativeConstruct() override;
-	void SetInfo(FText InName, UPinnedWindowBase* InParent, UWidget* InWidget, bool IsPersistent = false);
+	void SetInfo(FText InName, UPinnedWindowBase* InParent, UWidget* InWidget, bool InIsPersistent = false);
 	void SetInfo(UPinnedWindowBase* InParent, UWidget* InWidget);
 	void SetInfo(FText InName);
 	void EditName(bool EnableEditing);
+	UFUNCTION()
+	void ActivateRenameBox();
 	UWidget* SetSelected(bool IsSelected = false);
 	UWidget* GetSection();
 	FString GetName();
+	void InitInRenameMode() { bInitInRenameMode = true; }
+
+	UFUNCTION()
+	bool GetIsPersistent() { return bIsPersistent; }
 
 	UPROPERTY()
 	FOnTabClickedSignature OnTabClickedDelegate;
@@ -42,7 +48,7 @@ public:
 	FOnNameChangedSignature OnNameChangedDelegate;
 
 	UPROPERTY()
-	FOnRemoveClickedSignature OnRemoveClickedDelegate;
+	FOnRemoveSignature OnRemoveDelegate;
 
 private:
 	virtual FReply NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
@@ -57,16 +63,13 @@ private:
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
-	UBorder* Background;
+	UTabBorder* Background;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
 	UVerticalTextBlock* Text;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
 	UVerticalEditableTextBox* RenameTextBox;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true, BindWidget))
-	UEditorUtilityButton* RemoveButton;
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
 	FLinearColor BaseColor;
@@ -80,6 +83,8 @@ private:
 	UPROPERTY()
 	UWidget* Widget;
 	bool bIsSelected;
+	bool bIsPersistent = false;
+	bool bInitInRenameMode = false;
 
 	UPROPERTY()
 	UPinnedWindowBase* Parent;
