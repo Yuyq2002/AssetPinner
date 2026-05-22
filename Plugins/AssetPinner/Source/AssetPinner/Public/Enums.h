@@ -21,4 +21,5 @@ enum class ERotation : uint8
 {
 	Clockwise,
 	CounterClockwise,
+	Horizontal
 };

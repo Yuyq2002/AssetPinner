@@ -40,8 +40,14 @@ void UPinnedWindowBase::NativeConstruct()
 	if (FPaths::ValidatePath(ConfigPath))
 	{
 		FFileHelper::LoadFileToStringArray(Data, *ConfigPath);
-		Size = FCString::Atof(*Data[0]);
-		Data.RemoveAt(0);
+		if (!Data.IsEmpty())
+		{
+			if (Data[0].IsNumeric())
+			{
+				Size = FCString::Atof(*Data[0]);
+				Data.RemoveAt(0);
+			}
+		}
 	}
 
 	if (PinnedSection)

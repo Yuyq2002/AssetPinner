@@ -156,7 +156,17 @@ void FAssetPinnerModule::ExecutePinAsset(FMenuBuilder& MenuBuilder, const TArray
 			FSlateIcon(FAppStyle::GetAppStyleSetName(), "ViewportActorPreview.Pinned"),
 			FUIAction(FExecuteAction::CreateLambda([SelectedAssets]()
 				{
-                    PinAssetAction::PinAssets(SelectedAssets);
+                    for (auto& AssetData : SelectedAssets)
+                    {
+                        FString AssetPath = AssetData.PackageName.ToString();
+
+                        UPinnedAssetSubsystem* Subsystem = nullptr;
+                        if (GEditor)
+                            Subsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
+
+                        if (Subsystem)
+                            Subsystem->AddAssetPath(AssetPath);
+                    }
 				})),
 			NAME_None,
 			EUserInterfaceActionType::Button);

@@ -36,7 +36,6 @@ FReply SExtendedSlateBorder::OnMouseButtonUp(const FGeometry& MyGeometry, const 
 			TSharedPtr<SWidget> MenuContentWidget = BuildContextMenuContent();
 			if (MenuContentWidget.IsValid())
 			{
-				ActiveContextMenu.PrepareToSummon();
 				static const bool bFocusImmediately = true;
 
 				TSharedPtr<IMenu> ContextMenu;
@@ -49,12 +48,6 @@ FReply SExtendedSlateBorder::OnMouseButtonUp(const FGeometry& MyGeometry, const 
 						FPopupTransitionEffect(FPopupTransitionEffect::ContextMenu),
 						bFocusImmediately
 					);
-
-				// Make sure the window is valid. It's possible for the parent to already be in the destroy queue, for example if the editable text was configured to dismiss it's window during OnTextCommitted.
-				if (!ContextMenu.IsValid())
-				{
-					ActiveContextMenu.SummonFailed();
-				}
 			}
 		}
 

@@ -271,7 +271,20 @@ int32 SVerticalTextBlock::OnPaint(const FPaintArgs& Args, const FGeometry& Allot
 	const FVector2D HorizontalTextPosition = VerticalTextCenter - ActualHorizontalTextSize / 2.0f;
 
 	// Define the text's geometry using the horizontal bounds, then rotate it 90/-90 degrees into place to become vertical.
-	const FSlateRenderTransform RotationTransform(FSlateRenderTransform(FQuat2D(FMath::DegreesToRadians(Rotation.Get() == ERotation::Clockwise ? 90 : -90))));
+	float RotationAngle = 0;
+	switch (Rotation.Get())
+	{
+	case ERotation::Clockwise:
+		RotationAngle = 90.f;
+		break;
+	case ERotation::CounterClockwise:
+		RotationAngle = -90.f;
+		break;
+	case ERotation::Horizontal:
+		RotationAngle = 0.f;
+		break;
+	}
+	const FSlateRenderTransform RotationTransform(FSlateRenderTransform(FQuat2D(FMath::DegreesToRadians(RotationAngle))));
 	const FGeometry TextGeometry = AllottedGeometry.MakeChild(ActualHorizontalTextSize, FSlateLayoutTransform(HorizontalTextPosition), RotationTransform, FVector2D(0.5f, 0.5f));
 
 	if (bSimpleTextMode)

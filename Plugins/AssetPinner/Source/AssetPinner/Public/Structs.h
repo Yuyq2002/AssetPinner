@@ -40,10 +40,10 @@ struct FSection
 	FString Name;
 
 	UPROPERTY()
-	UPinnedSectionBase* SectionWidget;
+	UPinnedSectionBase* SectionWidget = nullptr;
 
 	UPROPERTY()
-	bool bIsPersistent;
+	bool bIsPersistent = false;
 
 	FSection() = default;
 

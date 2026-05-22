@@ -15,7 +15,7 @@ class UExtendedBorder : public UBorder
 	bool CanPin();
 	void Unpin();
 	void LocateInBrowser();
-	void MoveToTab(int Index);
+	void SwitchTab(int Index);
 	void GenerateTabSubMenu(FMenuBuilder& Builder);
 
 public:

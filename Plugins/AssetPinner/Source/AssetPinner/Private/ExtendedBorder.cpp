@@ -138,7 +138,7 @@ void UExtendedBorder::LocateInBrowser()
 	}
 }
 
-void UExtendedBorder::MoveToTab(int Index)
+void UExtendedBorder::SwitchTab(int Index)
 {
 	UPinnedAssetSubsystem* PinnedAssetSubsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
 	if (!PinnedAssetSubsystem)
@@ -158,10 +158,10 @@ void UExtendedBorder::GenerateTabSubMenu(FMenuBuilder& Builder)
 	for (int i = 0; i < Names.Num(); i++)
 	{
 		Builder.AddMenuEntry(
-			NSLOCTEXT("AssetPinner", "MoveToTabLabel", "Move To " + Names[i]),
-			NSLOCTEXT("AssetPinner", "MoveToTabTooltip", "Move Asset To " + Names[i] + " Tab"),
+			NSLOCTEXT("AssetPinner", "SwitchTabLabel", "Move To " + Names[i]),
+			NSLOCTEXT("AssetPinner", "SwitchTabTooltip", "Move Asset To " + Names[i] + " Tab"),
 			FSlateIcon(),
-			FExecuteAction::CreateUObject(this, &UExtendedBorder::MoveToTab, i)
+			FExecuteAction::CreateUObject(this, &UExtendedBorder::SwitchTab, i)
 		);
 	}
 }

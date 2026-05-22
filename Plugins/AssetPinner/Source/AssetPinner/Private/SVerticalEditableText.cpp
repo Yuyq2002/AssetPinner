@@ -139,7 +139,15 @@ void SVerticalEditableText::SetRotation(TAttribute<ERotation> InRotation)
 
 void SVerticalEditableText::Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime)
 {
-	EditableTextLayout->Tick(AllottedGeometry, InCurrentTime, InDeltaTime);
+	FVector2D NewSize = AllottedGeometry.GetLocalSize();
+
+	if (Rotation.Get() != ERotation::Horizontal)
+	{
+		NewSize = FVector2D(NewSize.Y, NewSize.X);
+	}
+
+	FGeometry NewGeomatry = AllottedGeometry.MakeChild(NewSize, FSlateLayoutTransform());
+	EditableTextLayout->Tick(NewGeomatry, InCurrentTime, InDeltaTime);
 }
 
 int32 SVerticalEditableText::OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const
@@ -164,7 +172,20 @@ int32 SVerticalEditableText::OnPaint(const FPaintArgs& Args, const FGeometry& Al
 	const FVector2D HorizontalTextPosition = VerticalTextCenter - ActualHorizontalTextSize / 2.0f;
 
 	// Define the text's geometry using the horizontal bounds, then rotate it 90/-90 degrees into place to become vertical.
-	const FSlateRenderTransform RotationTransform(FSlateRenderTransform(FQuat2D(FMath::DegreesToRadians(Rotation.Get() == ERotation::Clockwise ? 90 : -90))));
+	float RotationAngle = 0.0f;
+	switch (Rotation.Get())
+	{
+	case ERotation::Clockwise:
+		RotationAngle = 90.0f;
+		break;
+	case ERotation::CounterClockwise:
+		RotationAngle = -90.0f;
+		break;
+	case ERotation::Horizontal:
+		RotationAngle = 0.0f;
+		break;
+	}
+	const FSlateRenderTransform RotationTransform(FSlateRenderTransform(FQuat2D(FMath::DegreesToRadians(RotationAngle))));
 	const FGeometry TextGeometry = AllottedGeometry.MakeChild(ActualHorizontalTextSize, FSlateLayoutTransform(HorizontalTextPosition), RotationTransform, FVector2D(0.5f, 0.5f));
 
 	const FTextBlockStyle& EditableTextStyle = EditableTextLayout->GetTextStyle();
@@ -189,7 +210,12 @@ FVector2D SVerticalEditableText::ComputeDesiredSize(float LayoutScaleMultiplier)
 {
 	EditableTextLayout->ComputeDesiredSize(LayoutScaleMultiplier);
 	FVector2D TextLayoutSize = EditableTextLayout->GetSize();
-	return FVector2D(TextLayoutSize.Y, FMath::Max(TextLayoutSize.X, MinDesiredWidth.Get()));
+	if(Rotation.Get() != ERotation::Horizontal)
+	{
+		TextLayoutSize = FVector2D(TextLayoutSize.Y, FMath::Max(TextLayoutSize.X, MinDesiredWidth.Get()));
+	}
+
+	return TextLayoutSize;
 }
 
 FChildren* SVerticalEditableText::GetChildren()
