@@ -7,6 +7,7 @@
 #include <VerticalTextBlock.h>
 #include "VerticalEditableTextBox.h"
 #include "EditorUtilityWidgetComponents.h"
+#include "Containers/Ticker.h"
 
 void UTab::NativeConstruct()
 {
@@ -20,7 +21,14 @@ void UTab::NativeConstruct()
 	}
 
 	if(bInitInRenameMode)
-		ActivateRenameBox();
+		FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([this](float DeltaTime) -> bool
+			{
+				ActivateRenameBox();
+
+				// Return false to tell the ticker to stop. (If you return true, it loops).
+				return false;
+
+			}), 0.0f);
 }
 
 void UTab::SetInfo(FText InName, UPinnedWindowBase* InParent, UWidget* InWidget, bool InIsPersistent)
