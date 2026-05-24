@@ -29,6 +29,7 @@ public:
 	void AddAssetPath(FString Path, EPathType Type = EPathType::Asset, bool IsPinned = true);
 	void RemoveAssetPath(FString Path);
 	void MoveAssetPath(FString Path, int TabIndex);
+	bool MoveAssetPath(FString Path, FString TabName);
 	void ClearRecent();
 
 	void SetTabs(const TArray<FSection>& InTabs);

@@ -13,6 +13,7 @@
 #include "Structs.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/SizeBoxSlot.h"
+#include "SlotDragOperation.h"
 
 void UPinnedAssetSlotBase::SetAssetData(const FPinnedAssetData& Data)
 {
@@ -122,4 +123,50 @@ void UPinnedAssetSlotBase::NativeOnMouseEnter(const FGeometry& InGeometry, const
 void UPinnedAssetSlotBase::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
 {
 	Background->SetBrushColor(BaseColor);
+}
+
+FReply UPinnedAssetSlotBase::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	Super::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
+
+	if (InMouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
+	{
+		FEventReply Reply;
+		Reply.NativeReply = FReply::Handled();
+
+		if (this)
+		{
+			TSharedPtr<SWidget> SlateWidgetDetectingDrag = GetCachedWidget();
+			if (SlateWidgetDetectingDrag.IsValid())
+			{
+				Reply.NativeReply = Reply.NativeReply.DetectDrag(SlateWidgetDetectingDrag.ToSharedRef(), EKeys::LeftMouseButton);
+				return Reply.NativeReply;
+			}
+		}
+	}
+
+	return FReply::Unhandled();
+}
+
+void UPinnedAssetSlotBase::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)
+{
+	Super::NativeOnDragDetected(InGeometry, InMouseEvent, OutOperation);
+
+	USlotDragOperation* DragDropOperation = NewObject<USlotDragOperation>();
+	SetVisibility(ESlateVisibility::HitTestInvisible);
+
+	DragDropOperation->DraggedWidget = this;
+	DragDropOperation->DragOffset = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
+	DragDropOperation->OriginalParent = GetParent();
+
+	DragDropOperation->DefaultDragVisual = this;	
+	DragDropOperation->Pivot = EDragPivot::MouseDown;
+
+	OutOperation = DragDropOperation;
+}
+
+void UPinnedAssetSlotBase::NativeOnDragCancelled(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
+{
+	Super::NativeOnDragCancelled(InDragDropEvent, InOperation);
+	SetVisibility(ESlateVisibility::Visible);
 }

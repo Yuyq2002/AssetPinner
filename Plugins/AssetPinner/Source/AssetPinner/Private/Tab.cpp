@@ -8,6 +8,11 @@
 #include "VerticalEditableTextBox.h"
 #include "EditorUtilityWidgetComponents.h"
 #include "Containers/Ticker.h"
+#include "SlotDragOperation.h"
+#include "PinnedAssetSubsystem.h"
+#include "PinnedAssetSlotBase.h"
+#include "PinnedSectionBase.h"
+#include "Components/WrapBox.h"
 
 void UTab::NativeConstruct()
 {
@@ -31,7 +36,7 @@ void UTab::NativeConstruct()
 			}), 0.0f);
 }
 
-void UTab::SetInfo(FText InName, UPinnedWindowBase* InParent, UWidget* InWidget, bool InIsPersistent)
+void UTab::SetInfo(FText InName, UPinnedWindowBase* InParent, UPinnedSectionBase* InWidget, bool InIsPersistent)
 {
 	Parent = InParent;
 	Widget = InWidget;
@@ -45,7 +50,7 @@ void UTab::SetInfo(FText InName, UPinnedWindowBase* InParent, UWidget* InWidget,
 	bIsPersistent = InIsPersistent;
 }
 
-void UTab::SetInfo(UPinnedWindowBase* InParent, UWidget* InWidget)
+void UTab::SetInfo(UPinnedWindowBase* InParent, UPinnedSectionBase* InWidget)
 {
 	Parent = InParent;
 	Widget = InWidget;
@@ -80,7 +85,7 @@ void UTab::ActivateRenameBox()
 	EditName(true);
 }
 
-UWidget* UTab::SetSelected(bool IsSelected)
+UPinnedSectionBase* UTab::SetSelected(bool IsSelected)
 {
 	bIsSelected = IsSelected;
 
@@ -96,7 +101,7 @@ UWidget* UTab::SetSelected(bool IsSelected)
 	}
 }
 
-UWidget* UTab::GetSection()
+UPinnedSectionBase* UTab::GetSection()
 {
 	return Widget;
 }
@@ -126,6 +131,30 @@ void UTab::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
 {
 	if (!bIsSelected)
 		Background->SetBrushColor(BaseColor);
+}
+
+bool UTab::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
+{
+	Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
+
+	USlotDragOperation* Operation = Cast<USlotDragOperation>(InOperation);
+
+	if (!Operation)
+		return false;
+
+	if (Operation->OriginalParent == Widget)
+		return false;
+
+	UPinnedAssetSubsystem* Subsystem = GEditor ? GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>() : nullptr;
+	if(!Subsystem)
+		return false;
+
+	if (!Subsystem->MoveAssetPath(Operation->DraggedWidget->GetAssetPath(), Text->GetText().ToString()))
+	{
+		return false;
+	}
+
+	return true;
 }
 
 void UTab::OnNameChanged(const FText& InText, ETextCommit::Type CommitMethod)

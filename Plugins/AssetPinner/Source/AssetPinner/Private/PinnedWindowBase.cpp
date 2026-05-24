@@ -54,7 +54,7 @@ void UPinnedWindowBase::NativeConstruct()
 		SectionMap.Add(FSection("Pinned", PinnedSection, true));
 
 	if (RecentSection)
-		SectionMap.Add(FSection("Recent", RecentSection, true));
+		SectionMap.Add(FSection("History", RecentSection, true));
 
 	if (TabList)
 	{
@@ -117,7 +117,6 @@ EditState UPinnedWindowBase::CheckInEditMode()
 {
 	return EditMode;
 }
-
 
 void UPinnedWindowBase::SwitchTab(UWidget* Widget)
 {

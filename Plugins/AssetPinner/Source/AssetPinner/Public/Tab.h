@@ -10,6 +10,7 @@ class UTabBorder;
 class UVerticalTextBlock;
 class UVerticalEditableTextBox;
 class UPinnedWindowBase;
+class UPinnedSectionBase;
 class UEditorUtilityButton;
 
 /**
@@ -27,14 +28,14 @@ class ASSETPINNER_API UTab : public UEditorUtilityWidget
 	
 public:
 	virtual void NativeConstruct() override;
-	void SetInfo(FText InName, UPinnedWindowBase* InParent, UWidget* InWidget, bool InIsPersistent = false);
-	void SetInfo(UPinnedWindowBase* InParent, UWidget* InWidget);
+	void SetInfo(FText InName, UPinnedWindowBase* InParent, UPinnedSectionBase* InWidget, bool InIsPersistent = false);
+	void SetInfo(UPinnedWindowBase* InParent, UPinnedSectionBase* InWidget);
 	void SetInfo(FText InName);
 	void EditName(bool EnableEditing);
 	UFUNCTION()
 	void ActivateRenameBox();
-	UWidget* SetSelected(bool IsSelected = false);
-	UWidget* GetSection();
+	UPinnedSectionBase* SetSelected(bool IsSelected = false);
+	UPinnedSectionBase* GetSection();
 	FString GetName();
 	void InitInRenameMode() { bInitInRenameMode = true; }
 
@@ -54,6 +55,7 @@ private:
 	virtual FReply NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) override;
+	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 
 	UFUNCTION()
 	void OnNameChanged(const FText& InText, ETextCommit::Type CommitMethod);
@@ -81,7 +83,7 @@ private:
 	FLinearColor SelectedColor;
 
 	UPROPERTY()
-	UWidget* Widget;
+	UPinnedSectionBase* Widget;
 	bool bIsSelected;
 	bool bIsPersistent = false;
 	bool bInitInRenameMode = false;

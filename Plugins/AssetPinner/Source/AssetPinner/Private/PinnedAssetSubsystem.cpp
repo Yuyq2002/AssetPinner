@@ -85,6 +85,23 @@ void UPinnedAssetSubsystem::MoveAssetPath(FString Path, int TabIndex)
 	}
 }
 
+bool UPinnedAssetSubsystem::MoveAssetPath(FString Path, FString TabName)
+{
+	int Index = 0;
+	for(auto& Tab : Tabs)
+	{
+		if (Tab.Equals(TabName))
+		{
+			MoveAssetPath(Path, Index);
+			return true;
+		}
+
+		Index++;
+	}
+
+	return false;
+}
+
 void UPinnedAssetSubsystem::ClearRecent()
 {
 	AssetDataList.RemoveAll(
