@@ -17,6 +17,9 @@ void SExtendedSlateBorder::Construct(const FArguments& InArgs)
 		.ForegroundColor(InArgs._ForegroundColor)
 		.ShowEffectWhenDisabled(InArgs._ShowEffectWhenDisabled)
 		.FlipForRightToLeftFlowDirection(InArgs._FlipForRightToLeftFlowDirection)
+		[
+			InArgs._Content.Widget
+		]
 	);
 
 	ContextMenuExtender = InArgs._ContextMenuExtender;

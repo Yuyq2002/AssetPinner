@@ -1,14 +1,17 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "AssetPinner.h"
+
 #include "ToolMenus.h"
 #include "EditorUtilityWidgetBlueprint.h"
 #include "EditorUtilitySubsystem.h"
-#include <ContentBrowserModule.h>
+#include "ContentBrowserModule.h"
 #include "PinAssetAction.h"
-#include <LevelEditor.h>
+#include "LevelEditor.h"
 #include "PinnedAssetSubsystem.h"
 #include "Enums.h"
+#include "AssetPinnerPublic.h"
+
 #define LOCTEXT_NAMESPACE "FAssetPinnerModule"
 
 void FAssetPinnerModule::StartupModule()
@@ -17,6 +20,10 @@ void FAssetPinnerModule::StartupModule()
 
     UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FAssetPinnerModule::RegisterMenuExtension));
     AddContentBrowserContextMenuExtender();
+
+    FGlobalTabmanager::Get()->RegisterNomadTabSpawner(FName("AssetPinner"), FOnSpawnTab::CreateRaw(this, &FAssetPinnerModule::OnSpawnAssetPinner))
+        .SetDisplayName(LOCTEXT("EventCollectionEditorTabTitle", "Event Collection Editor"))
+        .SetMenuType(ETabSpawnerMenuType::Hidden);
 }
 
 void FAssetPinnerModule::ShutdownModule()
@@ -54,9 +61,8 @@ void FAssetPinnerModule::RegisterMenuExtension()
 
                 if (WidgetBP)
                 {
-                    UEditorUtilitySubsystem* EditorUtilitySubsystem = GEditor->GetEditorSubsystem<UEditorUtilitySubsystem>();
-                    FName ID;
-                    EditorUtilitySubsystem->SpawnAndRegisterTabAndGetID(WidgetBP, ID);
+                    FGlobalTabmanager::Get()->TryInvokeTab(FName("AssetPinner"));
+
 
                     //FLevelEditorModule& LevelEditorModule = FModuleManager::GetModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
                     //if (TSharedPtr<FTabManager> LevelEditorTabManager = LevelEditorModule.GetLevelEditorTabManager())
@@ -197,6 +203,15 @@ void FAssetPinnerModule::ExecutePinPath(FMenuBuilder& MenuBuilder, const TArray<
 
 void FAssetPinnerModule::PrintString()
 {
+}
+
+TSharedRef<class SDockTab> FAssetPinnerModule::OnSpawnAssetPinner(const FSpawnTabArgs& SpawnTabArgs)
+{
+    return SNew(SDockTab)
+        .TabRole(ETabRole::NomadTab)
+        [
+            FAssetPinnerPublic::MakeAssetPinnerWidget()
+        ];
 }
 
 #undef LOCTEXT_NAMESPACE

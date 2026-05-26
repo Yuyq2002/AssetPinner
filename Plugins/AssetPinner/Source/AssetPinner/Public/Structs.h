@@ -6,7 +6,7 @@
 #include "Enums.h"
 #include "Structs.generated.h"
 
-class UPinnedSectionBase;
+class SPinnedSection;
 
 /**
  * 
@@ -39,15 +39,14 @@ struct FSection
 
 	FString Name;
 
-	UPROPERTY()
-	UPinnedSectionBase* SectionWidget = nullptr;
+	TWeakPtr<SPinnedSection> SectionWidget;
 
 	UPROPERTY()
 	bool bIsPersistent = false;
 
 	FSection() = default;
 
-	FSection(FString InName, UPinnedSectionBase* InSectionWidget, bool InIsPersistent = false)
+	FSection(FString InName, TWeakPtr<SPinnedSection> InSectionWidget, bool InIsPersistent = false)
 	{
 		Name = InName;
 		SectionWidget = InSectionWidget;

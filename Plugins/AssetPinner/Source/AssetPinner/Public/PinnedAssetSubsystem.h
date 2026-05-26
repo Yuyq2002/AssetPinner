@@ -15,7 +15,7 @@ class ASSETPINNER_API UPinnedAssetSubsystem : public UEditorSubsystem
 {
 	GENERATED_BODY()
 	
-	DECLARE_DYNAMIC_DELEGATE_OneParam(FAssetPathListChangedSignature, const TArray<FPinnedAssetData>&, DataList);
+	DECLARE_DELEGATE_OneParam(FAssetPathListChangedSignature, const TArray<FPinnedAssetData>&);
 
 	FString FilePath;
 	TArray<FPinnedAssetData> AssetDataList;
@@ -50,6 +50,5 @@ public:
 
 	void OnAssetEditorOpen(UObject* Asset);
 
-	UPROPERTY()
-	UTexture2D* FolderIcon;
+	TSharedPtr<FSlateImageBrush> FolderIconBrush;
 };

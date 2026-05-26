@@ -2,7 +2,9 @@
 
 #pragma once
 
+#include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
+#include "Modules/ModuleInterface.h"
 
 class FAssetPinnerModule : public IModuleInterface
 {
@@ -23,9 +25,9 @@ private:
 	static void ExecutePinAsset(FMenuBuilder& MenuBuilder, const TArray<FAssetData> SelectedAssets);
 	static void ExecutePinPath(FMenuBuilder& MenuBuilder, const TArray<FString> SelectedAssets);
 	static void PrintString();
+	TSharedRef<class SDockTab> OnSpawnAssetPinner(const class FSpawnTabArgs& SpawnTabArgs);
 
 private:
 	FDelegateHandle ContentBrowserPathExtenderDelegateHandle;
 	FDelegateHandle ContentBrowserAssetExtenderDelegateHandle;
-
 };
