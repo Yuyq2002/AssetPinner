@@ -225,14 +225,14 @@ void SPinnedWindow::Refresh(const TArray<FPinnedAssetData>& List)
 	return;
 }
 
-void SPinnedWindow::OnTabClicked(SPinnedTab* Initiator)
+void SPinnedWindow::OnTabClicked(TSharedPtr<SPinnedTab> Initiator)
 {
 	ActiveTab->SetSelected();
-	ActiveTab = MakeShareable(Initiator);
+	ActiveTab = Initiator;
 	SwitchTab(ActiveTab->SetSelected(true).ToSharedRef());
 }
 
-void SPinnedWindow::OnTabRenamed(SPinnedTab* Initiator, FText OldName, FText NewName)
+void SPinnedWindow::OnTabRenamed(TSharedPtr<SPinnedTab> Initiator, FText OldName, FText NewName)
 {
 	Initiator->SetName(NewName);
 
@@ -244,7 +244,7 @@ void SPinnedWindow::OnTabRenamed(SPinnedTab* Initiator, FText OldName, FText New
 	}
 }
 
-void SPinnedWindow::OnTabRemoved(SPinnedTab* Initiator)
+void SPinnedWindow::OnTabRemoved(TSharedPtr<SPinnedTab> Initiator)
 {
 	TSharedPtr<SPinnedSection> Section = Initiator->GetSection();
 
@@ -256,7 +256,7 @@ void SPinnedWindow::OnTabRemoved(SPinnedTab* Initiator)
 	}
 
 	TabController->RemoveSlot(Section.ToSharedRef());
-	TabList->RemoveSlot(MakeShareable(Initiator));
+	TabList->RemoveSlot(Initiator.ToSharedRef());
 }
 
 void SPinnedWindow::OnClearButtonClicked()

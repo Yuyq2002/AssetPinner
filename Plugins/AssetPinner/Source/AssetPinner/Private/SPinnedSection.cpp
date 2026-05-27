@@ -12,6 +12,8 @@ SPinnedSection::SPinnedSection()
 void SPinnedSection::Construct(const FArguments& InArgs)
 {
 	ChildSlot
+		.VAlign(VAlign_Fill)
+		.HAlign(HAlign_Fill)
 		[
 			BuildSectionWidget().ToSharedRef()
 		];
@@ -41,8 +43,12 @@ TSharedPtr<SWidget> SPinnedSection::BuildSectionWidget()
 {
 	return SAssignNew(ScrollBox, SScrollBox)
 		+ SScrollBox::Slot()
+		.VAlign(VAlign_Fill)
+		.HAlign(HAlign_Fill)
 		[
 			SAssignNew(WrapBox, SWrapBox)
+				.Orientation(EOrientation::Orient_Horizontal)
+				.UseAllottedSize(true)
 		];
 }
 

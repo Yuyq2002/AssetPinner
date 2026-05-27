@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Widgets/SWidget.h"
 #include "Widgets/SCompoundWidget.h"
 #include "Enums.h"
@@ -9,9 +11,9 @@ class SVerticalEditableText;
 
 class SPinnedTab : public SCompoundWidget
 {
-	DECLARE_DELEGATE_OneParam(FOnTabClickedSignature, SPinnedTab*);
-	DECLARE_DELEGATE_OneParam(FOnRemoveSignature, SPinnedTab*);
-	DECLARE_DELEGATE_ThreeParams(FOnNameChangedSignature, SPinnedTab*, FText, FText);
+	DECLARE_DELEGATE_OneParam(FOnTabClickedSignature, TSharedPtr<SPinnedTab>);
+	DECLARE_DELEGATE_OneParam(FOnRemoveSignature, TSharedPtr<SPinnedTab>);
+	DECLARE_DELEGATE_ThreeParams(FOnNameChangedSignature, TSharedPtr<SPinnedTab>, FText, FText);
 
 public:
 	SLATE_BEGIN_ARGS(SPinnedTab)
@@ -48,6 +50,10 @@ private:
 
 	void OnRemoveClicked();
 	void BuildContextMenu(FMenuBuilder& Builder);
+
+	void OpenRenameBox();
+	bool CanEdit();
+	void RemoveTab();
 
 private:
 	TSharedPtr<SExtendedSlateBorder> Background;

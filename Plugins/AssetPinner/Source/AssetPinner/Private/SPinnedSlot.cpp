@@ -11,6 +11,7 @@
 #include "Widgets/Images/SImage.h"
 #include "AssetThumbnail.h"
 #include "ThumbnailRendering/ThumbnailManager.h"
+#include "SlotDragOperation.h"
 
 SPinnedSlot::SPinnedSlot()
 {
@@ -40,6 +41,7 @@ void SPinnedSlot::Construct(const FArguments& InArgs)
 							]
 							+SVerticalBox::Slot()
 							.FillHeight(2.5)
+							.HAlign(HAlign_Center)
 							[
 								SAssignNew(Name, STextBlock)
 									.Text(FText::FromString("None"))
@@ -51,6 +53,14 @@ void SPinnedSlot::Construct(const FArguments& InArgs)
 					]
 			]
 	];
+
+	AssetPath = InArgs._Data.AssetPath;
+	AssetData = InArgs._AssetData;
+
+	if (Name)
+		Name->SetText(FText::FromString(FPackageName::GetShortName(*InArgs._Data.AssetPath)));
+
+	PathType = InArgs._Data.PathType;
 
 	UPinnedAssetSubsystem* Subsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
 	if (!Subsystem)
@@ -70,43 +80,89 @@ void SPinnedSlot::Construct(const FArguments& InArgs)
 			Thumbnail->MakeThumbnailWidget()
 		);
 	}
-
-	AssetPath = InArgs._Data.AssetPath;
-
-	if (Name)
-		Name->SetText(FText::FromString(FPackageName::GetShortName(*InArgs._Data.AssetPath)));
-
-	PathType = InArgs._Data.PathType;
-}
-
-void SPinnedSlot::Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime)
-{
-
 }
 
 FReply SPinnedSlot::OnMouseButtonDoubleClick(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
-	return FReply::Unhandled();
+	if (!InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton))
+		return FReply::Unhandled();
+
+	if (PathType == EPathType::Folder)
+	{
+		TArray<FString> Assets{ AssetPath };
+
+		FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
+		ContentBrowserModule.Get().SyncBrowserToFolders(Assets);
+
+		return FReply::Handled();
+	}
+
+	TArray<FAssetData> Assets;
+	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
+	IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
+	AssetRegistry.GetAssetsByPackageName(FName(AssetPath), Assets);
+
+	if (Assets.Num() <= 0)
+		return FReply::Handled();
+
+	UObject* Asset = Assets[0].GetAsset();
+
+	if (!Asset)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Open Asset Window Failed - Asset is not valid"));
+		return FReply::Handled();
+	}
+
+	UAssetEditorSubsystem* Subsystem = GEditor ? GEditor->GetEditorSubsystem<UAssetEditorSubsystem>() : nullptr;
+	if (!Subsystem)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Open Asset Window Failed - Asset Editor Subsystem is not valid"));
+		return FReply::Handled();
+	}
+
+	bool success = Subsystem->OpenEditorForAsset(Asset);
+	if (success)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Open Asset Window Succeeded"));
+	}
+	else
+		UE_LOG(LogTemp, Error, TEXT("Open Asset Window Failed"));
+
+	return FReply::Handled();
 }
 
 void SPinnedSlot::OnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
-
+	Background->SetBorderBackgroundColor(HoverColor);
 }
 
 void SPinnedSlot::OnMouseLeave(const FPointerEvent& InMouseEvent)
 {
-
+	Background->SetBorderBackgroundColor(BaseColor);
 }
 
 FReply SPinnedSlot::OnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
+	if (InMouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
+	{
+		return FReply::Handled().DetectDrag(SharedThis(this), InMouseEvent.GetEffectingButton());
+	}
+
 	return FReply::Unhandled();
 }
 
 FReply SPinnedSlot::OnDragDetected(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
-	return FReply::Unhandled();
+	if (MouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton))
+	{
+		TSharedRef<FSlotDragOperation> DragOp = MakeShared<FSlotDragOperation>(AssetData);
+		DragOp->DraggedWidget = SharedThis(this).ToWeakPtr();
+		return FReply::Handled().BeginDragDrop(FSlotDragOperation::New(AssetData, Item->AssetFactory));
+	}
+	else
+	{
+		return FReply::Handled();
+	}
 }
 
 void SPinnedSlot::SetSize(int Width, int Height)

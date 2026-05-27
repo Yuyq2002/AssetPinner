@@ -22,7 +22,7 @@ void FAssetPinnerModule::StartupModule()
     AddContentBrowserContextMenuExtender();
 
     FGlobalTabmanager::Get()->RegisterNomadTabSpawner(FName("AssetPinner"), FOnSpawnTab::CreateRaw(this, &FAssetPinnerModule::OnSpawnAssetPinner))
-        .SetDisplayName(LOCTEXT("EventCollectionEditorTabTitle", "Event Collection Editor"))
+        .SetDisplayName(LOCTEXT("AssetPinnerTitle", "Asset Pinner"))
         .SetMenuType(ETabSpawnerMenuType::Hidden);
 }
 
@@ -62,14 +62,6 @@ void FAssetPinnerModule::RegisterMenuExtension()
                 if (WidgetBP)
                 {
                     FGlobalTabmanager::Get()->TryInvokeTab(FName("AssetPinner"));
-
-
-                    //FLevelEditorModule& LevelEditorModule = FModuleManager::GetModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
-                    //if (TSharedPtr<FTabManager> LevelEditorTabManager = LevelEditorModule.GetLevelEditorTabManager())
-                    //{
-                    //    TSharedPtr<SDockTab> Tab = LevelEditorTabManager->FindExistingLiveTab(FTabId(ID));
-                    //    Tab->context
-                    //}
                 }
             }),
         INVTEXT("Asset Pinner"),

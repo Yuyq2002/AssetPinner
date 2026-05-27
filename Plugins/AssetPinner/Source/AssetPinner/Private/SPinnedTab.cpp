@@ -6,12 +6,19 @@
 
 SPinnedTab::SPinnedTab()
 {
+	BaseColor = FLinearColor(0.007f, 0.007f, 0.007f, 1.0f);
+	HoverColor = FLinearColor(0.024f, 0.024f, 0.024f, 1.0f);
+	SelectedColor = FLinearColor(0.036f, 0.036f, 0.036f, 1.0f);
+	bIsSelected = false;
 }
 
 void SPinnedTab::Construct(const FArguments& InArgs)
 {
 	Widget = InArgs._Widget;
 	bIsPersistent = InArgs._IsPersistent;
+	OnTabClickedDelegate = InArgs._OnTabClickedDelegate;
+	OnNameChangedDelegate = InArgs._OnNameChangedDelegate;
+	OnRemoveDelegate = InArgs._OnRemoveDelegate;
 
 	ChildSlot
 		[
@@ -19,12 +26,14 @@ void SPinnedTab::Construct(const FArguments& InArgs)
 				.WidthOverride(35)
 				.HAlign(HAlign_Fill)
 				.VAlign(VAlign_Center)
+				.Visibility(EVisibility::SelfHitTestInvisible)
 				[
 					SAssignNew(Background, SExtendedSlateBorder)
+						.BorderBackgroundColor(BaseColor)
 						.ContextMenuExtender(this, &SPinnedTab::BuildContextMenu)
 						.HAlign(HAlign_Fill)
-						.VAlign(VAlign_Center)
-						.Padding(FMargin(0, 3, 0, 3))
+						.VAlign(VAlign_Fill)
+						.Padding(FMargin(0, 5, 0, 5))
 						[
 							SNew(SConstraintCanvas)
 								+ SConstraintCanvas::Slot()
@@ -35,7 +44,7 @@ void SPinnedTab::Construct(const FArguments& InArgs)
 								[
 									SAssignNew(Text, SVerticalTextBlock)
 										.Text(InArgs._Name)
-										.Font(FCoreStyle::GetDefaultFontStyle("Regular", 16))
+										.Font(FCoreStyle::GetDefaultFontStyle("Regular", 15))
 										.Rotation(ERotation::CounterClockwise)
 										.ColorAndOpacity(FLinearColor::White)
 								]
@@ -47,7 +56,7 @@ void SPinnedTab::Construct(const FArguments& InArgs)
 								[
 									SAssignNew(RenameTextBox, SVerticalEditableText)
 										.OnTextCommitted(this, &SPinnedTab::OnNameChanged)
-										.Font(FCoreStyle::GetDefaultFontStyle("Regular", 16))
+										.Font(FCoreStyle::GetDefaultFontStyle("Regular", 15))
 										.Text(InArgs._Name)
 										.Rotation(ERotation::CounterClockwise)
 										.Visibility(EVisibility::Collapsed)
@@ -128,7 +137,7 @@ FReply SPinnedTab::OnMouseButtonUp(const FGeometry& InGeometry, const FPointerEv
 {
 	if (InMouseEvent.GetEffectingButton() == EKeys::LeftMouseButton && OnTabClickedDelegate.IsBound())
 	{
-		OnTabClickedDelegate.Execute(this);
+		OnTabClickedDelegate.Execute(SharedThis(this));
 		return FReply::Handled();
 	}
 
@@ -179,17 +188,60 @@ FReply SPinnedTab::OnDrop(const FGeometry& MyGeometry, const FDragDropEvent& Dra
 
 void SPinnedTab::OnNameChanged(const FText& InText, ETextCommit::Type CommitMethod)
 {
-	OnNameChangedDelegate.ExecuteIfBound(this, Text->GetText(), InText);
+	OnNameChangedDelegate.ExecuteIfBound(SharedThis(this), Text->GetText(), InText);
 
 	EditName(false);
 }
 
 void SPinnedTab::OnRemoveClicked()
 {
-	OnRemoveDelegate.ExecuteIfBound(this);
+	OnRemoveDelegate.ExecuteIfBound(SharedThis(this));
 }
 
 void SPinnedTab::BuildContextMenu(FMenuBuilder& Builder)
 {
+#define LOCTEXT_NAMESPACE "TabContextMenu"
+	Builder.BeginSection("EditSection", LOCTEXT("Heading", "Edit Action"));
+	{
+		FUIAction RenameTabAction(
+			FExecuteAction::CreateRaw(this, &SPinnedTab::OpenRenameBox),
+			FCanExecuteAction::CreateRaw(this, &SPinnedTab::CanEdit)
+		);
 
+		Builder.AddMenuEntry(
+			NSLOCTEXT("AssetPinner", "TabRenameLabel", "Rename"),
+			NSLOCTEXT("AssetPinner", "TabRenameTooltip", "Rename the tab"),
+			FSlateIcon(),
+			RenameTabAction
+		);
+
+		FUIAction RemoveTabAction(
+			FExecuteAction::CreateRaw(this, &SPinnedTab::RemoveTab),
+			FCanExecuteAction::CreateRaw(this, &SPinnedTab::CanEdit)
+		);
+
+		Builder.AddMenuEntry(
+			NSLOCTEXT("AssetPinner", "TabRemoveLabel", "Remove"),
+			NSLOCTEXT("AssetPinner", "TabRemoveTooltip", "Remove the tab"),
+			FSlateIcon(),
+			RemoveTabAction
+		);
+	}
+	Builder.EndSection();
+#undef LOCTEXT_NAMESPACE
+}
+
+void SPinnedTab::OpenRenameBox()
+{
+	ActivateRenameBox();
+}
+
+bool SPinnedTab::CanEdit()
+{
+	return !bIsPersistent;
+}
+
+void SPinnedTab::RemoveTab()
+{
+	OnRemoveDelegate.Execute(SharedThis(this));
 }

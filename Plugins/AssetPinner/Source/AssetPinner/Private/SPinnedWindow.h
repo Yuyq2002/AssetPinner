@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Widgets/SWidget.h"
 #include "Widgets/SCompoundWidget.h"
 #include "Enums.h"
@@ -35,9 +37,9 @@ private:
 	void Refresh(const TArray<FPinnedAssetData>& List);
 
 	void OnListChangedCallback(const TArray<FPinnedAssetData>& List);
-	void OnTabClicked(SPinnedTab* Initiator);
-	void OnTabRenamed(SPinnedTab* Initiator, FText OldName, FText NewName);
-	void OnTabRemoved(SPinnedTab* Initiator);
+	void OnTabClicked(TSharedPtr<SPinnedTab> Initiator);
+	void OnTabRenamed(TSharedPtr<SPinnedTab> Initiator, FText OldName, FText NewName);
+	void OnTabRemoved(TSharedPtr<SPinnedTab> Initiator);
 	void OnClearButtonClicked();
 	FReply OnNewTabClicked();
 

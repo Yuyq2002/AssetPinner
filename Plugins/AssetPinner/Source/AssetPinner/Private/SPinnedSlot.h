@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Widgets/SWidget.h"
 #include "Widgets/SCompoundWidget.h"
 #include "Enums.h"
@@ -25,7 +27,6 @@ public:
 	SPinnedSlot();
 
 	void Construct(const FArguments& InArgs);
-	virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime);
 
 	virtual FReply OnMouseButtonDoubleClick(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual void OnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
@@ -51,6 +52,7 @@ private:
 	// -- VARIABLES --
 	FString AssetPath;
 	EPathType PathType;
+	FAssetData AssetData;
 
 	TSharedPtr<SBox> SizeBox;
 	TSharedPtr<SExtendedSlateBorder> Background;

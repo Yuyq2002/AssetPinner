@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Widgets/SWidget.h"
 #include "Widgets/SCompoundWidget.h"
 #include "Enums.h"
