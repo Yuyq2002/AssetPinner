@@ -173,6 +173,7 @@ SPinnedWindow::~SPinnedWindow()
 	FFileHelper::SaveStringToFile(SaveConfig, *ConfigPath);
 
 	PinnedAssetSubsystem->EmptyTabName();
+	PinnedAssetSubsystem->OnListChangedDelegate.Unbind();
 }
 
 EditState SPinnedWindow::CheckInEditMode()
@@ -216,6 +217,7 @@ void SPinnedWindow::Refresh(const TArray<FPinnedAssetData>& List)
 				.Data(Data)
 				.AssetData(Assets.IsValidIndex(0) ? Assets[0] : nullptr)
 				.Size(Size)
+				.Outer(SectionPtr)
 			);
 		};
 

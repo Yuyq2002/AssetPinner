@@ -2,16 +2,22 @@
 
 #include "CoreMinimal.h"
 #include <DragAndDrop/AssetDragDropOp.h>
-#include "SlotDragOperation.generated.h"
 
 class SPinnedSlot;
+class SPinnedSection;
+class UActorFactory;
 
 class ASSETPINNER_API FSlotDragOperation : public FAssetDragDropOp
 {
 public:
+	static TSharedRef<FSlotDragOperation> New(FAssetData InAssetData, UActorFactory* ActorFactory);
+
+	virtual TSharedPtr<SWidget> GetDefaultDecorator() const override;
+
+
 	TWeakPtr<SPinnedSlot> DraggedWidget;
 
 	FVector2D DragOffset;
 
-	TWeakPtr<SWidget> OriginalParent;
+	TWeakPtr<SPinnedSection> OriginalParent;
 };

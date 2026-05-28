@@ -3,6 +3,9 @@
 #include "SVerticalEditableText.h"
 #include "ExtendedSlateBorder.h"
 #include "Widgets/Layout/SConstraintCanvas.h"
+#include <SlotDragOperation.h>
+#include <PinnedAssetSubsystem.h>
+#include "SPinnedSlot.h"
 
 SPinnedTab::SPinnedTab()
 {
@@ -164,26 +167,29 @@ void SPinnedTab::OnMouseLeave(const FPointerEvent& InMouseEvent)
 
 FReply SPinnedTab::OnDrop(const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent)
 {
-	//USlotDragOperation* Operation = Cast<USlotDragOperation>(InOperation);
+	TSharedPtr< FDragDropOperation > Operation = DragDropEvent.GetOperation();
 
-	//if (!Operation)
-	//	return false;
+	if (!Operation.IsValid() || !Operation->IsOfType<FSlotDragOperation>())
+		return FReply::Handled();
 
-	//if (Operation->OriginalParent == Widget)
-	//	return false;
+	TSharedPtr<FSlotDragOperation> SlotOperation = StaticCastSharedPtr<FSlotDragOperation>(Operation);
 
-	//UPinnedAssetSubsystem* Subsystem = GEditor ? GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>() : nullptr;
-	//if (!Subsystem)
-	//	return false;
+	TSharedPtr<SPinnedSection> OriginalParent = SlotOperation->OriginalParent.Pin();
+	TSharedPtr<SPinnedSlot> DraggedSlot = SlotOperation->DraggedWidget.Pin();
 
-	//if (!Subsystem->MoveAssetPath(Operation->DraggedWidget->GetAssetPath(), Text->GetText().ToString()))
-	//{
-	//	return false;
-	//}
+	if (OriginalParent == Widget)
+		return FReply::Handled();
 
-	//return true;
+	UPinnedAssetSubsystem* Subsystem = GEditor ? GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>() : nullptr;
+	if (!Subsystem)
+		return FReply::Handled();
 
-	return FReply::Unhandled();
+	if (!Subsystem->MoveAssetPath(DraggedSlot->GetAssetPath(), Text->GetText().ToString()))
+	{
+		return FReply::Handled();
+	}
+
+	return FReply::Handled();
 }
 
 void SPinnedTab::OnNameChanged(const FText& InText, ETextCommit::Type CommitMethod)

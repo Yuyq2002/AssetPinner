@@ -4,6 +4,7 @@
 #include "Widgets/Layout/SConstraintCanvas.h"
 #include "SPinnedSlot.h"
 #include "PinnedAssetSubsystem.h"
+#include "SlotDragOperation.h"
 
 SPinnedSection::SPinnedSection()
 {
@@ -52,23 +53,34 @@ TSharedPtr<SWidget> SPinnedSection::BuildSectionWidget()
 		];
 }
 
-FReply SPinnedSection::OnDrop(const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent)
+bool SPinnedSection::IsInSection(TSharedPtr<SPinnedSlot> Slot)
 {
-	/*USlotDragOperation* Operation = Cast<USlotDragOperation>(InOperation);
-	if (!Operation)
-		return false;
+	FChildren* AllChildren = WrapBox->GetChildren();
 
-	if (Operation->OriginalParent != WrapBox)
+	for(int i = 0; i < AllChildren->Num(); i++)
 	{
-		Operation->DraggedWidget->RemoveFromParent();
-		WrapBox->AddChildToWrapBox(Operation->DraggedWidget);
+		TSharedRef<SWidget> ChildWidget = AllChildren->GetChildAt(i);
+		if (ChildWidget == Slot)
+			return true;
 	}
 
-	Operation->DraggedWidget->SetVisibility(ESlateVisibility::Visible);
+	return false;
+}
 
-	return true;*/
+FReply SPinnedSection::OnDrop(const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent)
+{
+	TSharedPtr< FDragDropOperation > Operation = DragDropEvent.GetOperation();
 
-	return FReply::Unhandled();
+	if (!Operation.IsValid() || !Operation->IsOfType<FSlotDragOperation>())
+		return FReply::Handled();
+
+	TSharedPtr<FSlotDragOperation> SlotOperation = StaticCastSharedPtr<FSlotDragOperation>(Operation);
+
+	TSharedPtr<SPinnedSlot> DraggedSlot = SlotOperation->DraggedWidget.Pin();
+
+	DraggedSlot->SetVisibility(EVisibility::Visible);
+
+	return FReply::Handled();
 }
 
 SHistorySection::SHistorySection()

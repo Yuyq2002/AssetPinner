@@ -15,6 +15,8 @@
 
 SPinnedSlot::SPinnedSlot()
 {
+	BaseColor = FLinearColor(0.018f, 0.018f, 0.018f, 1);
+	HoverColor = FLinearColor(0.527f, 0.527f, 0.527f, 1);
 }
 
 void SPinnedSlot::Construct(const FArguments& InArgs)
@@ -56,6 +58,7 @@ void SPinnedSlot::Construct(const FArguments& InArgs)
 
 	AssetPath = InArgs._Data.AssetPath;
 	AssetData = InArgs._AssetData;
+	OuterWidget = InArgs._Outer;
 
 	if (Name)
 		Name->SetText(FText::FromString(FPackageName::GetShortName(*InArgs._Data.AssetPath)));
@@ -155,9 +158,15 @@ FReply SPinnedSlot::OnDragDetected(const FGeometry& MyGeometry, const FPointerEv
 {
 	if (MouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton))
 	{
-		TSharedRef<FSlotDragOperation> DragOp = MakeShared<FSlotDragOperation>(AssetData);
+		TSharedRef<FSlotDragOperation> DragOp = FSlotDragOperation::New(AssetData, nullptr);
+
+		SetVisibility(EVisibility::HitTestInvisible);
+
 		DragOp->DraggedWidget = SharedThis(this).ToWeakPtr();
-		return FReply::Handled().BeginDragDrop(FSlotDragOperation::New(AssetData, Item->AssetFactory));
+		DragOp->DragOffset = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
+		DragOp->OriginalParent = OuterWidget;
+
+		return FReply::Handled().BeginDragDrop(DragOp);
 	}
 	else
 	{

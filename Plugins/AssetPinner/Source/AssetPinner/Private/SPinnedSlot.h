@@ -8,6 +8,7 @@
 class SExtendedSlateBorder;
 class FAssetThumbnail;
 class UPinnedAssetSubsystem;
+class SPinnedSection;
 struct FPinnedAssetData;
 
 class SPinnedSlot : public SCompoundWidget
@@ -17,11 +18,13 @@ public:
 		: _Data()
 		, _AssetData()
 		, _Size(100)
+		, _Outer(nullptr)
 		{
 		}
 		SLATE_ARGUMENT(FPinnedAssetData, Data)
 		SLATE_ARGUMENT(FAssetData, AssetData)
 		SLATE_ARGUMENT(float, Size)
+		SLATE_ARGUMENT(TWeakPtr<SPinnedSection>, Outer)
 	SLATE_END_ARGS();
 
 	SPinnedSlot();
@@ -59,6 +62,7 @@ private:
 	TSharedPtr<STextBlock> Name;
 	TSharedPtr<SBox> ThumbnailHolder;
 	TSharedPtr<FAssetThumbnail> Thumbnail;
+	TWeakPtr<SPinnedSection> OuterWidget;
 
 	FLinearColor BaseColor;
 	FLinearColor HoverColor;

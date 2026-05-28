@@ -30,6 +30,7 @@ public:
 	void SetEnableScrolling(bool IsEnabled);
 
 	TSharedPtr<SWidget> BuildSectionWidget();
+	bool IsInSection(TSharedPtr<SPinnedSlot> Slot);
 
 private:
 	TSharedPtr<SScrollBox> ScrollBox;
