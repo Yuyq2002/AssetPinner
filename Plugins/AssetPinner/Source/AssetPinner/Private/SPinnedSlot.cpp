@@ -46,7 +46,7 @@ void SPinnedSlot::Construct(const FArguments& InArgs)
 							.HAlign(HAlign_Center)
 							[
 								SAssignNew(Name, STextBlock)
-									.Text(FText::FromString("None"))
+									.Text(FText::FromString(FPackageName::GetShortName(*InArgs._Data.AssetPath)))
 									.ColorAndOpacity(FLinearColor::White)
 									.ShadowColorAndOpacity(FLinearColor::Black)
 									.ShadowOffset(FVector2D(1.f, 1.f))
@@ -60,29 +60,11 @@ void SPinnedSlot::Construct(const FArguments& InArgs)
 	AssetData = InArgs._AssetData;
 	OuterWidget = InArgs._Outer;
 
-	if (Name)
-		Name->SetText(FText::FromString(FPackageName::GetShortName(*InArgs._Data.AssetPath)));
-
 	PathType = InArgs._Data.PathType;
 
-	UPinnedAssetSubsystem* Subsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
-	if (!Subsystem)
-		return;
-
-	if (PathType == EPathType::Folder)
-	{
-		ThumbnailHolder->SetContent(
-			SNew(SImage)
-			.Image(Subsystem->FolderIconBrush.Get())
-		);
-	}
-	else if (PathType == EPathType::Asset)
-	{
-		Thumbnail = MakeShared<FAssetThumbnail>(InArgs._AssetData, 100, 100, UThumbnailManager::Get().GetSharedThumbnailPool());
-		ThumbnailHolder->SetContent(
-			Thumbnail->MakeThumbnailWidget()
-		);
-	}
+	ThumbnailHolder->SetContent(
+		MakeThumbnailWidget(InArgs._Size).ToSharedRef()
+	);
 }
 
 FReply SPinnedSlot::OnMouseButtonDoubleClick(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
@@ -158,13 +140,10 @@ FReply SPinnedSlot::OnDragDetected(const FGeometry& MyGeometry, const FPointerEv
 {
 	if (MouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton))
 	{
-		TSharedRef<FSlotDragOperation> DragOp = FSlotDragOperation::New(AssetData, nullptr);
-
-		SetVisibility(EVisibility::HitTestInvisible);
-
-		DragOp->DraggedWidget = SharedThis(this).ToWeakPtr();
+		TSharedRef<FSlotDragOperation> DragOp = FSlotDragOperation::New(AssetData, nullptr, SharedThis(this).ToWeakPtr(), OuterWidget);
 		DragOp->DragOffset = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
-		DragOp->OriginalParent = OuterWidget;
+
+		SetVisibility(EVisibility::Collapsed);
 
 		return FReply::Handled().BeginDragDrop(DragOp);
 	}
@@ -179,14 +158,60 @@ void SPinnedSlot::SetSize(int Width, int Height)
 	SizeBox->SetHeightOverride(Height);
 	SizeBox->SetWidthOverride(Width);
 
-	if (Thumbnail->GetSize().X != Width || Thumbnail->GetSize().Y != Height)
+	if (Thumbnail->GetSize().X != Width || Thumbnail->GetSize().Y != Width)
 	{
-		Thumbnail = MakeShared<FAssetThumbnail>(Thumbnail->GetAssetData(), 100, 100, UThumbnailManager::Get().GetSharedThumbnailPool());
+		Thumbnail = MakeShared<FAssetThumbnail>(Thumbnail->GetAssetData(), Width, Width, UThumbnailManager::Get().GetSharedThumbnailPool());
 		ThumbnailHolder->SetContent(
 			Thumbnail->MakeThumbnailWidget()
 		);
 	}
 }
+
+TSharedPtr<SWidget> SPinnedSlot::MakeThumbnailWidget(float Size)
+{
+	UPinnedAssetSubsystem* Subsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
+	if (!Subsystem)
+		return nullptr;
+
+	if (PathType == EPathType::Folder)
+	{
+		return
+			SNew(SImage)
+			.Image(Subsystem->FolderIconBrush.Get());
+	}
+	else if (PathType == EPathType::Asset)
+	{
+		if(!Thumbnail.IsValid() || Thumbnail->GetSize().X != Size || Thumbnail->GetSize().Y != Size)
+			Thumbnail = MakeShared<FAssetThumbnail>(AssetData, Size, Size, UThumbnailManager::Get().GetSharedThumbnailPool());
+		
+		return
+			Thumbnail->MakeThumbnailWidget();
+	}
+
+	return SNew(STextBlock)
+		.Text(FText::FromString("Unknown Type"));
+}
+
+FText SPinnedSlot::GetAssetName() const
+{
+	return FText::FromString(FPackageName::GetShortName(*AssetPath));
+}
+
+void SPinnedSlot::SetSlotState(int State)
+{
+	switch (State)
+	{
+		case 0: // Normal
+			Background->SetBorderBackgroundColor(BaseColor);
+			break;
+		case 1: // Hovered
+			Background->SetBorderBackgroundColor(HoverColor);
+			break;
+	default:
+		break;
+	}
+}
+
 
 void SPinnedSlot::BuildSlotContextMenu(FMenuBuilder& Builder)
 {

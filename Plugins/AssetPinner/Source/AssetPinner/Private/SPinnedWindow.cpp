@@ -43,8 +43,16 @@ void SPinnedWindow::Construct(const FArguments& InArgs)
 				.Offset(FMargin(0, 0, 40, 40))
 				.Alignment(FVector2D(0, 1))
 				[
-						SNew(SButton)
-								.OnClicked(this, &SPinnedWindow::OnNewTabClicked)
+					SNew(SButton)
+						.OnClicked(this, &SPinnedWindow::OnNewTabClicked)
+						.HAlign(HAlign_Fill)
+						.VAlign(VAlign_Fill)
+						.ContentPadding(FMargin(0))
+						.ButtonStyle(FCoreStyle::Get(), "NoBorder")
+						[
+							SNew(SImage)
+								.Image(PinnedAssetSubsystem->AddIconBrush.Get())
+						]
 				]
 				+ SConstraintCanvas::Slot()
 				.Anchors(FAnchors(0, 0, 1, 1))
@@ -81,12 +89,13 @@ void SPinnedWindow::Construct(const FArguments& InArgs)
 			.VAlign(VAlign_Fill)
 			.AutoHeight()
 			[
-				SAssignNew(ActiveTab, SPinnedTab)
+				SAssignNew(PinnedTab, SPinnedTab)
 					.Name(FText::FromString("Pinned"))
 					.Widget(PinnedSection)
 					.IsPersistent(true)
 					.OnTabClickedDelegate(this, &SPinnedWindow::OnTabClicked)
 			];
+		ActiveTab = PinnedTab;
 		ActiveTab->SetSelected(true);
 
 		TabList->AddSlot()
@@ -259,6 +268,9 @@ void SPinnedWindow::OnTabRemoved(TSharedPtr<SPinnedTab> Initiator)
 
 	TabController->RemoveSlot(Section.ToSharedRef());
 	TabList->RemoveSlot(Initiator.ToSharedRef());
+
+	ActiveTab = PinnedTab;
+	SwitchTab(ActiveTab->SetSelected(true).ToSharedRef());
 }
 
 void SPinnedWindow::OnClearButtonClicked()
@@ -290,7 +302,7 @@ FReply SPinnedWindow::OnNewTabClicked()
 			SNew(SPinnedTab)
 				.Name(FText::FromString(NewName))
 				.Widget(NewSection)
-				.IsPersistent(true)
+				.IsPersistent(false)
 				.OnTabClickedDelegate(this, &SPinnedWindow::OnTabClicked)
 				.OnNameChangedDelegate(this, &SPinnedWindow::OnTabRenamed)
 				.OnRemoveDelegate(this, &SPinnedWindow::OnTabRemoved)

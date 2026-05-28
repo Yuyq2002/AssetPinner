@@ -67,6 +67,7 @@ private:
 
 	UPinnedAssetSubsystem* PinnedAssetSubsystem;
 	TSharedPtr<SPinnedTab> ActiveTab;
+	TSharedPtr<SPinnedTab> PinnedTab;
 	TArray<FSection> SectionMap;
 
 	int DefaultNameIndex;

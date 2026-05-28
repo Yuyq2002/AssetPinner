@@ -39,6 +39,9 @@ public:
 
 	void SetSize(int Width, int Height);
 	FString GetAssetPath() const { return AssetPath; }
+	TSharedPtr<SWidget> MakeThumbnailWidget(float Size);
+	FText GetAssetName() const;
+	void SetSlotState(int State); // 0 for normal, 1 for hovered, 2 for dragging
 
 private:
 	// -- FUNCTIONS --

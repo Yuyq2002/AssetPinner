@@ -23,6 +23,8 @@ class ASSETPINNER_API UPinnedAssetSubsystem : public UEditorSubsystem
 	UPROPERTY()
 	TArray<FString> Tabs;
 
+	float SlotSize = 100.f;
+
 public:
 	FAssetPathListChangedSignature OnListChangedDelegate;
 
@@ -50,5 +52,7 @@ public:
 
 	void OnAssetEditorOpen(UObject* Asset);
 
+	// Move to style class later
 	TSharedPtr<FSlateImageBrush> FolderIconBrush;
+	TSharedPtr<FSlateImageBrush> AddIconBrush;
 };
