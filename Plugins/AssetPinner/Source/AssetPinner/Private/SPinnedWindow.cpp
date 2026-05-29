@@ -48,11 +48,7 @@ void SPinnedWindow::Construct(const FArguments& InArgs)
 						.HAlign(HAlign_Fill)
 						.VAlign(VAlign_Fill)
 						.ContentPadding(FMargin(0))
-						.ButtonStyle(FCoreStyle::Get(), "NoBorder")
-						[
-							SNew(SImage)
-								.Image(PinnedAssetSubsystem->AddIconBrush.Get())
-						]
+						.ButtonStyle(&PinnedAssetSubsystem->AddButtonStyle)
 				]
 				+ SConstraintCanvas::Slot()
 				.Anchors(FAnchors(0, 0, 1, 1))

@@ -245,6 +245,14 @@ void UPinnedAssetSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	UTexture2D* AddIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Script/Engine.Texture2D'/AssetPinner/Icon/icon_levels_addlayer_16x.icon_levels_addlayer_16x'"));
 	AddIconBrush = MakeShareable(new FSlateImageBrush(AddIcon, FVector2D(64, 64)));
 
+	AddButtonStyle = FAppStyle::Get().GetWidgetStyle<FButtonStyle>("Button");
+	AddButtonStyle.SetNormal(*AddIconBrush);
+	AddButtonStyle.SetHovered(*AddIconBrush);
+	AddButtonStyle.SetPressed(*AddIconBrush);
+	AddButtonStyle.Normal.TintColor = FLinearColor(0.04f, 0.04f, 0.04f, 1.0f);
+	AddButtonStyle.Hovered.TintColor = FLinearColor(0.095f, 0.095f, 0.095f, 1.0f);
+	AddButtonStyle.Pressed.TintColor = FLinearColor(0.028f, 0.028f, 0.028f, 1.0f);
+
 	FilePath = FPaths::GameUserDeveloperDir() + "PinnedAssetData.txt";
 	TArray<FString> LoadList;
 	FFileHelper::LoadFileToStringArray(LoadList, *FilePath);

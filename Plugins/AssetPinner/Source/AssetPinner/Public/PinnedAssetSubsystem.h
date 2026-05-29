@@ -55,4 +55,5 @@ public:
 	// Move to style class later
 	TSharedPtr<FSlateImageBrush> FolderIconBrush;
 	TSharedPtr<FSlateImageBrush> AddIconBrush;
+	FButtonStyle AddButtonStyle;
 };

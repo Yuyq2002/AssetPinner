@@ -1,6 +1,7 @@
 /AssetPinner/BPW_PinnedAssetSection 1 1
 /AssetPinner/BPW_PinnedAssetSlot 1 1
 /Game/NewFolder/NewBlueprint 1 1
-/Game/NewFolder/NewEditorUtilityWidgetBlueprint 0 1
+/Game/NewFolder/NewEditorUtilityWidgetBlueprint 2 1
 /Game/NewFolder/NewBlueprint1 1 1
 /Game/NewFolder 0 2
+/Game/NewFolder/NewMaterial 1 1
