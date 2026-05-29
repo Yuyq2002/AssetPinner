@@ -68,7 +68,7 @@ void SPinnedTab::Construct(const FArguments& InArgs)
 				]
 		];
 
-	if (bInitInRenameMode)
+	if (InArgs._InitInRenameMode)
 		FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([this](float DeltaTime) -> bool
 			{
 				ActivateRenameBox();
@@ -93,6 +93,7 @@ void SPinnedTab::EditName(bool EnableEditing)
 	if (EnableEditing)
 	{
 		RenameTextBox->SetVisibility(EVisibility::Visible);
+		FSlateApplication::Get().SetKeyboardFocus(RenameTextBox, EFocusCause::SetDirectly);
 		Text->SetVisibility(EVisibility::Collapsed);
 	}
 	else

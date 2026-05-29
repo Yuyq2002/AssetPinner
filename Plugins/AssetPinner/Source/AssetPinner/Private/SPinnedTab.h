@@ -17,6 +17,7 @@ class SPinnedTab : public SCompoundWidget
 
 public:
 	SLATE_BEGIN_ARGS(SPinnedTab)
+		: _InitInRenameMode(false)
 		{
 		}
 		SLATE_EVENT(FOnTabClickedSignature, OnTabClickedDelegate)
@@ -25,6 +26,7 @@ public:
 		SLATE_ARGUMENT(FText, Name)
 		SLATE_ARGUMENT(TSharedPtr<SPinnedSection>, Widget)
 		SLATE_ARGUMENT(bool, IsPersistent)
+		SLATE_ARGUMENT(bool, InitInRenameMode)
 	SLATE_END_ARGS();
 
 	SPinnedTab();
@@ -36,7 +38,6 @@ public:
 	TSharedPtr<SPinnedSection> SetSelected(bool IsSelected = false);
 	TSharedPtr<SPinnedSection> GetSection();
 	FString GetName();
-	void InitInRenameMode() { bInitInRenameMode = true; }
 
 	bool GetIsPersistent() { return bIsPersistent; }
 
@@ -72,6 +73,5 @@ private:
 
 	bool bIsSelected;
 	bool bIsPersistent = false;
-	bool bInitInRenameMode = false;
 
 };

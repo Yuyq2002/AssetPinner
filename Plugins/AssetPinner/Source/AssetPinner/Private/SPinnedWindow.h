@@ -57,6 +57,7 @@ private:
 
 	TSharedPtr<SWidgetSwitcher> TabController;
 	TSharedPtr<SVerticalBox> TabList;
+	TSharedPtr<SScrollBox> ScrollBox;
 	TSharedPtr<SButton> NewTabButton;
 	TArray<TWeakPtr<SPinnedSlot>> Slots;
 
@@ -70,6 +71,6 @@ private:
 	TSharedPtr<SPinnedTab> PinnedTab;
 	TArray<FSection> SectionMap;
 
-	int DefaultNameIndex;
+	int DefaultNameIndex = 0;
 
 };

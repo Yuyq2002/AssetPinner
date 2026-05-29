@@ -28,7 +28,7 @@ void SPinnedWindow::Construct(const FArguments& InArgs)
 				.Offset(FMargin(0, 0, 40, 40))
 				.Alignment(FVector2D(0, 1))
 				[
-					SNew(SScrollBox)
+					SAssignNew(ScrollBox, SScrollBox)
 						.ScrollBarThickness(FVector2D(9, 5))
 						.ScrollBarAlwaysVisible(true)
 						+ SScrollBox::Slot()
@@ -276,12 +276,11 @@ void SPinnedWindow::OnClearButtonClicked()
 
 FReply SPinnedWindow::OnNewTabClicked()
 {
-	FString NewName = "NewTab_" + FString::FromInt(DefaultNameIndex);
-	while (ContainsSection(NewName))
+	while (ContainsSection("NewTab_" + FString::FromInt(DefaultNameIndex)))
 	{
 		DefaultNameIndex++;
-		NewName = "NewTab_" + FString::FromInt(DefaultNameIndex);
 	}
+	FString NewName = "NewTab_" + FString::FromInt(DefaultNameIndex);
 
 	TSharedPtr<SPinnedSection> NewSection;
 	TabController->AddSlot()
@@ -299,10 +298,13 @@ FReply SPinnedWindow::OnNewTabClicked()
 				.Name(FText::FromString(NewName))
 				.Widget(NewSection)
 				.IsPersistent(false)
+				.InitInRenameMode(true)
 				.OnTabClickedDelegate(this, &SPinnedWindow::OnTabClicked)
 				.OnNameChangedDelegate(this, &SPinnedWindow::OnTabRenamed)
 				.OnRemoveDelegate(this, &SPinnedWindow::OnTabRemoved)
 		];
+	
+	ScrollBox->ScrollToEnd();
 
 	PinnedAssetSubsystem->AddTabNames(NewName);
 
