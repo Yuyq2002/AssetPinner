@@ -8,6 +8,7 @@ class SPinnedSection;
 class SExtendedSlateBorder;
 class SVerticalTextBlock;
 class SVerticalEditableText;
+class SWindow;
 
 class SPinnedTab : public SCompoundWidget
 {
@@ -54,7 +55,11 @@ private:
 
 	void OpenRenameBox();
 	bool CanEdit();
+	void OpenColorPicker(FMenuBuilder& Builder);
 	void RemoveTab();
+
+	void OnSetColorFromColorPicker(FLinearColor NewColor);
+	void OnColorPickerCancelled(FLinearColor OriginalColor);
 
 private:
 	TSharedPtr<SExtendedSlateBorder> Background;
@@ -65,11 +70,16 @@ private:
 	FLinearColor HoverColor;
 	FLinearColor SelectedColor;
 
+	FLinearColor InitialColor;
+
 	TSharedPtr<SPinnedSection> Widget;
 
 	FOnTabClickedSignature OnTabClickedDelegate;
 	FOnNameChangedSignature OnNameChangedDelegate;
 	FOnRemoveSignature OnRemoveDelegate;
+
+	float HoveredRatio = 3.42857f;
+	float SelectedRatio = 5.14286f;
 
 	bool bIsSelected;
 	bool bIsPersistent = false;

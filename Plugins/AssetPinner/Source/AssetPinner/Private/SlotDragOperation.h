@@ -10,6 +10,8 @@ class UActorFactory;
 class ASSETPINNER_API FSlotDragOperation : public FAssetDragDropOp
 {
 public:
+	DRAG_DROP_OPERATOR_TYPE(FSlotDragOperation, FAssetDragDropOp)
+
 	static TSharedRef<FSlotDragOperation> New(FAssetData InAssetData, UActorFactory* ActorFactory, TWeakPtr<SPinnedSlot> InDraggedWidget, TWeakPtr<SPinnedSection> InOriginalParent);
 
 	virtual TSharedPtr<SWidget> GetDefaultDecorator() const override;

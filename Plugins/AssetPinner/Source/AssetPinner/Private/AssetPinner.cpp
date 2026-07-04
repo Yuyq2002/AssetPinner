@@ -185,7 +185,7 @@ void FAssetPinnerModule::ExecutePinPath(FMenuBuilder& MenuBuilder, const TArray<
                 {
                     UPinnedAssetSubsystem* Subsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
                     if (Subsystem)
-                        Subsystem->AddAssetPath(SelectedAssets[0], EPathType::Folder);
+                        Subsystem->AddAssetPath(SelectedAssets[0], EPathType::Folder, 0);
                 })),
             NAME_None,
             EUserInterfaceActionType::Button);

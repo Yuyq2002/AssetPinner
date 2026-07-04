@@ -6,10 +6,15 @@
 
 void UPinnedAssetSubsystem::AddAssetPath(FString Path, EPathType Type, bool IsPinned)
 {
+	AddAssetPath(Path, Type, IsPinned ? 0 : 1);
+}
+
+void UPinnedAssetSubsystem::AddAssetPath(FString Path, EPathType Type, int TabIndex)
+{
 	bool SaveData = false;
-	if (!ContainsPath(Path))
+	if (!ContainsEntry(Path, TabIndex))
 	{
-		AssetDataList.Add(FPinnedAssetData(Path, !IsPinned, Type));
+		AssetDataList.Add(FPinnedAssetData(Path, TabIndex, Type));
 
 		SaveData = true;
 
@@ -21,7 +26,7 @@ void UPinnedAssetSubsystem::AddAssetPath(FString Path, EPathType Type, bool IsPi
 		int Index = -1;
 		if (FindPath(Path, Index))
 		{
-			if (AssetDataList[Index].TabIndex == 0 || !IsPinned)
+			if (AssetDataList[Index].TabIndex == 0 || TabIndex == 1)
 				return;
 
 			AssetDataList[Index].TabIndex = 0;
@@ -185,6 +190,22 @@ TArray<FString> UPinnedAssetSubsystem::GetTabNames()
 	return Tabs;
 }
 
+int UPinnedAssetSubsystem::GetTabIndex(FString TabName)
+{
+	int Index = 0;
+	for (auto& Tab : Tabs)
+	{
+		if (Tab.Equals(TabName))
+		{
+			return Index;
+		}
+
+		Index++;
+	}
+
+	return -1;
+}
+
 bool UPinnedAssetSubsystem::GetStatus(FString Path)
 {
 	int Index = -1;
@@ -208,10 +229,10 @@ const TArray<FPinnedAssetData>& UPinnedAssetSubsystem::GetAssetDataList()
 	return AssetDataList;
 }
 
-bool UPinnedAssetSubsystem::ContainsPath(FString Path)
+bool UPinnedAssetSubsystem::ContainsEntry(FString Path, int TabIndex)
 {
 	for (const FPinnedAssetData& Data : AssetDataList)
-		if (Data.AssetPath.Equals(Path))
+		if (Data.AssetPath.Equals(Path) && Data.TabIndex == TabIndex)
 			return true;
 
 	return false;

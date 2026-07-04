@@ -17,6 +17,7 @@ public:
 	SLATE_BEGIN_ARGS(SPinnedSection)
 		{
 		}
+		SLATE_ARGUMENT(FString, TabName)
 	SLATE_END_ARGS();
 
 	SPinnedSection();
@@ -36,6 +37,9 @@ private:
 	TSharedPtr<SScrollBox> ScrollBox;
 	TSharedPtr<SWrapBox> WrapBox;
 
+protected:
+	FString TabName;
+
 };
 
 class SHistorySection : public SPinnedSection
@@ -44,6 +48,7 @@ public:
 	SLATE_BEGIN_ARGS(SHistorySection)
 		{
 		}
+		SLATE_ARGUMENT(FString, TabName)
 	SLATE_END_ARGS();
 
 	SHistorySection();

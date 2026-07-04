@@ -29,6 +29,7 @@ public:
 	FAssetPathListChangedSignature OnListChangedDelegate;
 
 	void AddAssetPath(FString Path, EPathType Type = EPathType::Asset, bool IsPinned = true);
+	void AddAssetPath(FString Path, EPathType Type, int TabIndex);
 	void RemoveAssetPath(FString Path);
 	void MoveAssetPath(FString Path, int TabIndex);
 	bool MoveAssetPath(FString Path, FString TabName);
@@ -40,12 +41,13 @@ public:
 	void RenameTab(FString Name, int Index);
 	void EmptyTabName();
 	TArray<FString> GetTabNames();
+	int GetTabIndex(FString TabName);
 
 	bool GetStatus(FString Path);
 	EPathType GetPathType(FString Path);
 	const TArray<FPinnedAssetData>& GetAssetDataList();
 
-	bool ContainsPath(FString Path);
+	bool ContainsEntry(FString Path, int TabIndex);
 	bool FindPath(FString Path, int& OutIndex);
 
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;

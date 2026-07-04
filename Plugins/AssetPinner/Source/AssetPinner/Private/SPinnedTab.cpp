@@ -6,6 +6,7 @@
 #include <SlotDragOperation.h>
 #include <PinnedAssetSubsystem.h>
 #include "SPinnedSlot.h"
+#include "Widgets/Colors/SColorPicker.h"
 
 SPinnedTab::SPinnedTab()
 {
@@ -73,7 +74,6 @@ void SPinnedTab::Construct(const FArguments& InArgs)
 			{
 				ActivateRenameBox();
 
-				// Return false to tell the ticker to stop. (If you return true, it loops).
 				return false;
 
 			}), 0.0f);
@@ -222,6 +222,12 @@ void SPinnedTab::BuildContextMenu(FMenuBuilder& Builder)
 			RenameTabAction
 		);
 
+		Builder.AddSubMenu(
+			NSLOCTEXT("AssetPinner", "ColorPickerLabel", "Change Color"),
+			NSLOCTEXT("AssetPinner", "ColorPickerTooltip", "Open color picker"),
+			FNewMenuDelegate::CreateRaw(this, &SPinnedTab::OpenColorPicker)
+		);
+
 		FUIAction RemoveTabAction(
 			FExecuteAction::CreateRaw(this, &SPinnedTab::RemoveTab),
 			FCanExecuteAction::CreateRaw(this, &SPinnedTab::CanEdit)
@@ -248,7 +254,46 @@ bool SPinnedTab::CanEdit()
 	return !bIsPersistent;
 }
 
+void SPinnedTab::OpenColorPicker(FMenuBuilder& Builder)
+{
+	Builder.AddWidget(
+		SNew(SColorPicker)
+			.TargetColorAttribute(BaseColor)
+			.UseAlpha(false)
+			.OnlyRefreshOnMouseUp(false)
+			.OnlyRefreshOnOk(false)
+			.OnColorCommitted(FOnLinearColorValueChanged::CreateRaw(this, &SPinnedTab::OnSetColorFromColorPicker))
+			.OnColorPickerCancelled(FOnColorPickerCancelled::CreateRaw(this, &SPinnedTab::OnColorPickerCancelled))
+			.DisplayGamma(GEngine->GetDisplayGamma()),
+		FText()
+		);
+}
+
 void SPinnedTab::RemoveTab()
 {
 	OnRemoveDelegate.Execute(SharedThis(this));
+}
+
+void SPinnedTab::OnSetColorFromColorPicker(FLinearColor NewColor)
+{
+	BaseColor = NewColor;
+	HoverColor = BaseColor * FLinearColor(HoveredRatio, HoveredRatio, HoveredRatio, 1);
+	SelectedColor = BaseColor * FLinearColor(SelectedRatio, SelectedRatio, SelectedRatio, 1);
+
+	if (bIsSelected)
+		Background->SetBorderBackgroundColor(SelectedColor);
+	else
+		Background->SetBorderBackgroundColor(BaseColor);
+}
+
+void SPinnedTab::OnColorPickerCancelled(FLinearColor OriginalColor)
+{
+	BaseColor = OriginalColor;
+	HoverColor = BaseColor * FLinearColor(HoveredRatio, HoveredRatio, HoveredRatio, 1);
+	SelectedColor = BaseColor * FLinearColor(SelectedRatio, SelectedRatio, SelectedRatio, 1);
+
+	if(bIsSelected)
+		Background->SetBorderBackgroundColor(SelectedColor);
+	else
+		Background->SetBorderBackgroundColor(BaseColor);
 }

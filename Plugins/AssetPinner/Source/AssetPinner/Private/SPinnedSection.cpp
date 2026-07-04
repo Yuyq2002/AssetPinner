@@ -12,6 +12,7 @@ SPinnedSection::SPinnedSection()
 
 void SPinnedSection::Construct(const FArguments& InArgs)
 {
+	TabName = InArgs._TabName;
 	ChildSlot
 		.VAlign(VAlign_Fill)
 		.HAlign(HAlign_Fill)
@@ -71,14 +72,51 @@ FReply SPinnedSection::OnDrop(const FGeometry& MyGeometry, const FDragDropEvent&
 {
 	TSharedPtr< FDragDropOperation > Operation = DragDropEvent.GetOperation();
 
-	if (!Operation.IsValid() || !Operation->IsOfType<FSlotDragOperation>())
+	if (!Operation.IsValid())
 		return FReply::Handled();
 
-	TSharedPtr<FSlotDragOperation> SlotOperation = StaticCastSharedPtr<FSlotDragOperation>(Operation);
+	if (Operation->IsOfType<FSlotDragOperation>())
+	{
+		TSharedPtr<FSlotDragOperation> SlotOperation = StaticCastSharedPtr<FSlotDragOperation>(Operation);
 
-	TSharedPtr<SPinnedSlot> DraggedSlot = SlotOperation->DraggedWidget.Pin();
+		TSharedPtr<SPinnedSlot> DraggedSlot = SlotOperation->DraggedWidget.Pin();
 
-	DraggedSlot->SetVisibility(EVisibility::Visible);
+		DraggedSlot->SetVisibility(EVisibility::Visible);
+	}
+	else if(Operation->IsOfType<FAssetDragDropOp>())
+	{
+		TSharedPtr<FAssetDragDropOp> AssetOperation = StaticCastSharedPtr<FAssetDragDropOp>(Operation);
+
+		UPinnedAssetSubsystem* Subsystem = nullptr;
+		if (GEditor)
+			Subsystem = GEditor->GetEditorSubsystem<UPinnedAssetSubsystem>();
+
+		if (!Subsystem)
+			return FReply::Handled();
+
+		int TabIndex = Subsystem->GetTabIndex(TabName);
+		
+		if (AssetOperation->HasAssets())
+		{
+			TArray<FAssetData> DraggedAssets = AssetOperation->GetAssets();
+
+			for (const FAssetData& AssetData : DraggedAssets)
+			{
+				FString AssetPath = AssetData.PackageName.ToString();
+				Subsystem->AddAssetPath(AssetPath, EPathType::Asset, TabIndex);
+			}
+		}
+
+		if (AssetOperation->HasAssetPaths())
+		{
+			TArray<FString> DraggedAssets = AssetOperation->GetAssetPaths();
+
+			for (const FString& AssetPath : DraggedAssets)
+			{
+				Subsystem->AddAssetPath(AssetPath, EPathType::Folder, TabIndex);
+			}
+		}
+	}
 
 	return FReply::Handled();
 }
@@ -89,6 +127,7 @@ SHistorySection::SHistorySection()
 
 void SHistorySection::Construct(const FArguments& InArgs)
 {
+	TabName = InArgs._TabName;
 	ChildSlot
 		[
 			SNew(SConstraintCanvas)

@@ -60,12 +60,14 @@ void SPinnedWindow::Construct(const FArguments& InArgs)
 						.HAlign(HAlign_Fill)
 						[
 							SAssignNew(PinnedSection, SPinnedSection)
+								.TabName("Pinned")
 						]
 						+ SWidgetSwitcher::Slot()
 						.VAlign(VAlign_Fill)
 						.HAlign(HAlign_Fill)
 						[
 							SAssignNew(HistorySection, SHistorySection)
+								.TabName("History")
 						]
 				]
 		];
@@ -130,6 +132,7 @@ void SPinnedWindow::Construct(const FArguments& InArgs)
 			.HAlign(HAlign_Fill)
 			[
 				SAssignNew(NewSection, SPinnedSection)
+					.TabName(line)
 			];
 
 		SectionMap.Add(FSection(line, NewSection));
